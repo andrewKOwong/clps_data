@@ -2,6 +2,9 @@
 data/bootstraps.csv
 data/clps.csv
 
+# VSCODE
+.vscode
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
