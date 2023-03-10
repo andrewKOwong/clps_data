@@ -23,29 +23,35 @@ FIELDS = {
 START_PAGE = 9  # First data page
 END_PAGE = 126  # Last data page (inclusive)
 
-parser = argparse.ArgumentParser()
 
+# Shim this in between steps of the pipeline during debugging
+# to write out an html file for inspection.
+def debug_shim(soup: BeautifulSoup, out: str = 'debug.html') -> None:
+    with open(out, 'w') as f:
+        f.write(soup.prettify())
+
+
+# Parse args
+parser = argparse.ArgumentParser()
 parser.add_argument(
     'cdbk_html',
     help="pdf2txt.py codebook.pdf -o codebook.html --output_type html"
 )
-
 args = parser.parse_args()
 
+# Open and extract html
 p = Path(args.cdbk_html)
-
 with p.open() as f:
     soup = BeautifulSoup(f, 'html.parser')
-
 soup = soup.body.extract()
 
-# This is the div whose child is an anchor for the start of page 9
-start_div = soup.select(f'a[name="{START_PAGE}"]')[0].parent
 # Regenerating just the data pages
 # by finding all siblings of the start div,
 # and iterating through and appending until we get the div that
 # is right after the ending data page,
 # then reconstituting the strings into another soup object.
+# start_div whose child is an anchor for the start of page 9
+start_div = soup.select(f'a[name="{START_PAGE}"]')[0].parent
 html_doc = str(start_div)
 for tag in start_div.next_siblings:
     if (isinstance(tag, Tag)
@@ -103,6 +109,4 @@ for tag in soup.children:
                  or re.search(r"Page.*\-", tag.span.text) is not None)):
         tag.extract()
 
-
-with open("test.html", 'w') as f:
-    f.write(soup.prettify())
+debug_shim(soup)
