@@ -124,13 +124,15 @@ for tag in soup.children:
         tag.extract()
 
 
+# For the remaining elements, pull out text and left/top info
+# and place into a list of Element dataclass objects.
 @dataclass
 class Element:
     TEXT_TYPE = 'text'
     DIVIDER_TYPE = 'divider'
     elem_type: str
-    left: int
-    top: int
+    left: int  # Left position of the original html element
+    top: int  # Top position of the original html element
     text: str = ''
 
     def __post_init__(self):
@@ -139,9 +141,7 @@ class Element:
         self.top = int(self.top)
 
 
-# For the remaining elements, rewrite the html
-# to use new divs with type attributes of text/divider,
-# and left/top attributes for positioning information.
+# Create Element objects with loop.
 elements = []
 for tag in soup.children:
     # Check tags to see if they have attributes,
@@ -167,7 +167,7 @@ for tag in soup.children:
                 f"\n\nStyle attribute contents:\n"
                 f"{str(style)}"
             )
-        # Create new type attribute distinguishing
+        # Element type distinguishes
         # top level divs that have text fields
         # and top level spans that are dividers
         match tag.name:
