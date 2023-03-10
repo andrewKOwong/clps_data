@@ -184,7 +184,45 @@ for tag in soup.children:
 # then left to right order for ties.
 elements = sorted(elements, key=lambda e: int(e.left))
 elements = sorted(elements, key=lambda e: int(e.top))
-debug_listed_data(elements)
+
+# Remove leading/trailing whitespace from text fields
+for e in elements:
+    e.text = e.text.strip()
+
+
+# Extract the data over several steps.
+# Step 1: Group the elements into units corresponding
+# to each question. These are separated by divider elements.
+def group_elements(elements: list[Element]) -> list:
+    """Group elements into units corresponding to question.
+
+    Args:
+        elements: a list of Elements.
+    Returns:
+        A list of lists of Elements, with each sublist corresponding
+        to a questionnaire question, as separated by divider Elements.
+    """
+    units = []
+    current_unit = []
+    for e in elements:
+        # Complete a unit when encountering a divider
+        if e.elem_type == Element.DIVIDER_TYPE:
+            units.append(current_unit)
+            current_unit = []
+        # Otherwise add to current unit
+        else:
+            current_unit.append(e)
+    return units
+
+
+units = group_elements(elements)
+
+
+# Step 2: initalize a list of dicts to hold question answers.
+questions = [{}] * len(units)
+
+
+debug_listed_data(units)
 
 
 # # Extract the data.
