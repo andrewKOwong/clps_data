@@ -159,7 +159,15 @@ for tag in soup.children:
             f'{tag.text}'
             f'</div>')
 
+soup = BeautifulSoup(html_doc, 'html.parser')
 
+# Sort the elements by top to bottom, then left to right for ties
+soup = [e for e in soup.children]
+soup = sorted(soup, key=lambda e: int(e['left']))
+soup = sorted(soup, key=lambda e: int(e['top']))
+html_doc = ""
+for e in soup:
+    html_doc += str(e)
 soup = BeautifulSoup(html_doc, 'html.parser')
 
 
