@@ -2,24 +2,31 @@ import argparse
 from pathlib import Path
 from bs4 import BeautifulSoup, Tag
 from dataclasses import dataclass
+from enum import Enum
 import re
 
-FIELDS = {
-    'variable_name': 'Variable Name',
-    'length': 'Length',
-    'position': 'Position',
-    'question_name': 'Question',
-    'concept': 'Concept',
-    'question_text': 'Question Text',
-    'universe': 'Universe',
-    'note': 'Note',
-    'source': 'Source',
-    'answer_categories': 'Answer Categories',
-    'code': 'Code',
-    'frequency': 'Frequency',
-    'weighted_frequency': 'Weighted Frequency',
-    'percent': '%'
-}
+
+class Field(Enum):
+    """Data fields for questions.
+
+    Field names can be used as dict keys or col names.
+    Field values are used to extract data out of the original data.
+    """
+    variable_name = 'Variable Name'
+    length = 'Length'
+    position = 'Position'
+    question_name = 'Question'
+    concept = 'Concept'
+    question_text = 'Question Text'
+    universe = 'Universe'
+    note = 'Note'
+    source = 'Source'
+    answer_categories = 'Answer Categories'
+    code = 'Code'
+    frequency = 'Frequency'
+    weighted_frequency = 'Weighted Frequency'
+    percent = '%'
+
 
 START_PAGE = 9  # First data page
 END_PAGE = 126  # Last data page (inclusive)
