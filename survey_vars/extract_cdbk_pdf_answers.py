@@ -179,16 +179,12 @@ for tag in soup.children:
                 raise ValueError("Unexpected non div/span element.")
         elements.append(Element(type_val, left, top, tag.text))
 
-debug_listed_data(elements)
 
-# # Sort the elements by top to bottom, then left to right for ties
-# soup = [e for e in soup.children]
-# soup = sorted(soup, key=lambda e: int(e['left']))
-# soup = sorted(soup, key=lambda e: int(e['top']))
-# html_doc = ""
-# for e in soup:
-#     html_doc += str(e)
-# soup = BeautifulSoup(html_doc, 'html.parser')
+# Sorted elements will be in top to bottom order,
+# then left to right order for ties.
+elements = sorted(elements, key=lambda e: int(e.left))
+elements = sorted(elements, key=lambda e: int(e.top))
+debug_listed_data(elements)
 
 
 # # Extract the data.
