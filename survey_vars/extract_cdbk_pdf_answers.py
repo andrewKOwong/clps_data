@@ -22,6 +22,9 @@ FIELDS = {
 
 START_PAGE = 9  # First data page
 END_PAGE = 126  # Last data page (inclusive)
+# For separating text fields and divider lines
+DIVIDER_TYPE = 'divider'
+TEXT_TYPE = 'text'
 
 
 # Shim this in between steps of the pipeline during debugging
@@ -29,6 +32,14 @@ END_PAGE = 126  # Last data page (inclusive)
 def debug_shim(soup: BeautifulSoup, out: str = 'debug.html') -> None:
     with open(out, 'w') as f:
         f.write(soup.prettify())
+
+
+# Use this to save the list of data during extraction for debugging.
+def debug_extract_data(data: list, out: str = 'debug.txt') -> None:
+    with open(out, 'w') as f:
+        for e in data:
+            f.write(e)
+            f.write('\n')
 
 
 # Parse args
@@ -148,9 +159,9 @@ for tag in soup.children:
         # and top level spans that are dividers
         match tag.name:
             case 'div':
-                type_val = 'text'
+                type_val = TEXT_TYPE
             case 'span':
-                type_val = 'divider'
+                type_val = DIVIDER_TYPE
             case _:
                 raise ValueError("Unexpected non div/span element.")
         html_doc += (
@@ -169,6 +180,19 @@ html_doc = ""
 for e in soup:
     html_doc += str(e)
 soup = BeautifulSoup(html_doc, 'html.parser')
+
+
+# Extract the data.
+# To avoid complicating things too much, do this in several passes.
+# First pass is to collect the elements into units for each variable.
+# Each unit is followed by a divider,
+# and the first unit has no divider ahead of it.
+def extract_to_units(soup: BeautifulSoup) -> list:
+    units = []
+    current_unit = []
+    for tag in soup.children:
+        if tag['type'] == DIVIDER_TYPE:
+            pass
 
 
 debug_shim(soup)
