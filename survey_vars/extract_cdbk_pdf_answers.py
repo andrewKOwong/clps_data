@@ -115,4 +115,52 @@ for tag in soup.children:
         tag.extract()
 
 
+# For the remaining elements, rewrite the html
+# to use new divs with type attributes of text/divider,
+# and left/top attributes for positioning information.
+html_doc = ""
+for tag in soup.children:
+    # Check tags to see if they have attributes,
+    # and if they have left and top styles.
+    if isinstance(tag, Tag):
+        try:
+            style = tag['style']
+        except AttributeError as e:
+            raise AttributeError(
+                f"Tag did not have a style attribute."
+                f"\n\nTag contents:\n\n"
+                f"{str(tag)}"
+                ) from e
+        # Left and top specify the corner of the box for the element.
+        # Get 1 or more digits between left/top: and px;
+        left = re.search(r"(?<=left:)\d+?(px;)", style).group(0)
+        top = re.search(r"(?<=top:)\d+?(px;)", style).group(0)
+        if left is None or top is None:
+            raise ValueError(
+                f"Did not find a left/top value."
+                f"\n\nTag contents:\n"
+                f"{str(tag)}"
+                f"\n\nStyle attribute contents:\n"
+                f"{str(style)}"
+            )
+        # Create new type attribute distinguishing
+        # top level divs that have text fields
+        # and top level spans that are dividers
+        match tag.name:
+            case 'div':
+                type_val = 'text'
+            case 'span':
+                type_val = 'divider'
+            case _:
+                raise ValueError("Unexpected non div/span element.")
+        html_doc += (
+            f'<div type="{type_val}"'
+            f' left="{left}" top="{top}">'
+            f'{tag.text}'
+            f'</div>')
+
+
+soup = BeautifulSoup(html_doc, 'html.parser')
+
+
 debug_shim(soup)
