@@ -109,4 +109,10 @@ for tag in soup.children:
                  or re.search(r"Page.*\-", tag.span.text) is not None)):
         tag.extract()
 
+# Remove page divs
+for tag in soup.children:
+    if (isinstance(tag, Tag) and tag.a is not None):
+        tag.extract()
+
+
 debug_shim(soup)
