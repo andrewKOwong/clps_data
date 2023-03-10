@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 from bs4 import BeautifulSoup, Tag
+from dataclasses import dataclass
 import re
 
 FIELDS = {
@@ -22,9 +23,6 @@ FIELDS = {
 
 START_PAGE = 9  # First data page
 END_PAGE = 126  # Last data page (inclusive)
-# For separating text fields and divider lines
-DIVIDER_TYPE = 'divider'
-TEXT_TYPE = 'text'
 
 
 # Shim this in between steps of the pipeline during debugging
@@ -34,11 +32,11 @@ def debug_shim(soup: BeautifulSoup, out: str = 'debug.html') -> None:
         f.write(soup.prettify())
 
 
-# Use this to save the list of data during extraction for debugging.
-def debug_extract_data(data: list, out: str = 'debug.txt') -> None:
+# Use this to save the lists of data during extraction for debugging.
+def debug_listed_data(data: list, out: str = 'debug.txt') -> None:
     with open(out, 'w') as f:
         for e in data:
-            f.write(e)
+            f.write(str(e))
             f.write('\n')
 
 
@@ -126,10 +124,25 @@ for tag in soup.children:
         tag.extract()
 
 
+@dataclass
+class Element:
+    TEXT_TYPE = 'text'
+    DIVIDER_TYPE = 'divider'
+    elem_type: str
+    left: int
+    top: int
+    text: str = ''
+
+    def __post_init__(self):
+        # Left and top are strs to be converted
+        self.left = int(self.left)
+        self.top = int(self.top)
+
+
 # For the remaining elements, rewrite the html
 # to use new divs with type attributes of text/divider,
 # and left/top attributes for positioning information.
-html_doc = ""
+elements = []
 for tag in soup.children:
     # Check tags to see if they have attributes,
     # and if they have left and top styles.
@@ -159,40 +172,36 @@ for tag in soup.children:
         # and top level spans that are dividers
         match tag.name:
             case 'div':
-                type_val = TEXT_TYPE
+                type_val = Element.TEXT_TYPE
             case 'span':
-                type_val = DIVIDER_TYPE
+                type_val = Element.DIVIDER_TYPE
             case _:
                 raise ValueError("Unexpected non div/span element.")
-        html_doc += (
-            f'<div type="{type_val}"'
-            f' left="{left}" top="{top}">'
-            f'{tag.text}'
-            f'</div>')
+        elements.append(Element(type_val, left, top, tag.text))
 
-soup = BeautifulSoup(html_doc, 'html.parser')
+debug_listed_data(elements)
 
-# Sort the elements by top to bottom, then left to right for ties
-soup = [e for e in soup.children]
-soup = sorted(soup, key=lambda e: int(e['left']))
-soup = sorted(soup, key=lambda e: int(e['top']))
-html_doc = ""
-for e in soup:
-    html_doc += str(e)
-soup = BeautifulSoup(html_doc, 'html.parser')
+# # Sort the elements by top to bottom, then left to right for ties
+# soup = [e for e in soup.children]
+# soup = sorted(soup, key=lambda e: int(e['left']))
+# soup = sorted(soup, key=lambda e: int(e['top']))
+# html_doc = ""
+# for e in soup:
+#     html_doc += str(e)
+# soup = BeautifulSoup(html_doc, 'html.parser')
 
 
-# Extract the data.
-# To avoid complicating things too much, do this in several passes.
-# First pass is to collect the elements into units for each variable.
-# Each unit is followed by a divider,
-# and the first unit has no divider ahead of it.
-def extract_to_units(soup: BeautifulSoup) -> list:
-    units = []
-    current_unit = []
-    for tag in soup.children:
-        if tag['type'] == DIVIDER_TYPE:
-            pass
+# # Extract the data.
+# # To avoid complicating things too much, do this in several passes.
+# # First pass is to collect the elements into units for each variable.
+# # Each unit is followed by a divider,
+# # and the first unit has no divider ahead of it.
+# def extract_to_units(soup: BeautifulSoup) -> list:
+#     units = []
+#     current_unit = []
+#     for tag in soup.children:
+#         if tag['type'] == DIVIDER_TYPE:
+#             pass
 
 
-debug_shim(soup)
+# debug_shim(soup)
