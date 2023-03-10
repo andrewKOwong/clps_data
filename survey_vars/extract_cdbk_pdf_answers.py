@@ -133,8 +133,8 @@ for tag in soup.children:
                 ) from e
         # Left and top specify the corner of the box for the element.
         # Get 1 or more digits between left/top: and px;
-        left = re.search(r"(?<=left:)\d+?(px;)", style).group(0)
-        top = re.search(r"(?<=top:)\d+?(px;)", style).group(0)
+        left = re.search(r"(?<=left:)\d+?(?=px;)", style).group(0)
+        top = re.search(r"(?<=top:)\d+?(?=px;)", style).group(0)
         if left is None or top is None:
             raise ValueError(
                 f"Did not find a left/top value."
