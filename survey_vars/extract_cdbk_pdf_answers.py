@@ -231,6 +231,13 @@ questions = [{}] * len(units)
 
 debug_listed_data(units)
 
+# Step 3: loop over units to extract data into questions list.
+def get_elem_idx_by_text(unit: list, text: str) -> int:
+    """Search a list of Elements for exact text match and return the index."""
+    for i, e in enumerate(unit):
+        if e.text == text:
+            return i
+    
 
 # # Extract the data.
 # # To avoid complicating things too much, do this in several passes.
