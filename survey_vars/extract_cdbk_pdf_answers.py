@@ -1,6 +1,7 @@
 import argparse
 from pathlib import Path
 from bs4 import BeautifulSoup, Tag
+import re
 
 FIELDS = {
     'variable_name': 'Variable Name',
@@ -92,6 +93,16 @@ def is_non_divider_hline(tag: Tag) -> bool:
 for tag in [e for e in soup.children]:
     if isinstance(tag, Tag) and is_non_divider_hline(tag):
         tag.extract()
+
+# Filter out header and footers
+for tag in soup.children:
+    if (isinstance(tag, Tag)
+            and tag.span is not None
+            and ("CLPS 2021 - Data Dictionary" in tag.span.text
+                 or "Totals may not add up due to rounding" in tag.span.text
+                 or re.search(r"Page.*\-", tag.span.text) is not None)):
+        tag.extract()
+
 
 with open("test.html", 'w') as f:
     f.write(soup.prettify())
