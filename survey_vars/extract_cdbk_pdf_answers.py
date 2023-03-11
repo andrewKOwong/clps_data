@@ -267,8 +267,14 @@ def get_length(unit: list):
             .text.split(':')[1].strip())
 
 
+def get_position(unit: list):
+    return (get_elem_by_text(unit, Field.position.value)
+            .text.split(':')[1].strip())
+
+
 for unit, q in zip(units, questions):
     q[Field.variable_name.name] = get_variable_name(unit)
     q[Field.length.name] = get_length(unit)
+    q[Field.position.name] = get_position(unit)
 
 debug_listed_data(questions, 'debug_questions.txt')
