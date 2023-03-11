@@ -196,6 +196,8 @@ elements = sorted(elements, key=lambda e: int(e.top))
 for e in elements:
     e.text = e.text.strip()
 
+debug_listed_data(elements, 'debug_elements.txt')
+
 
 # Extract the data over several steps.
 # Step 1: Group the elements into units corresponding
@@ -224,12 +226,11 @@ def group_elements(elements: list[Element]) -> list:
 
 units = group_elements(elements)
 
+debug_listed_data(units, 'debug_units.txt')
 
 # Step 2: initalize a list of dicts to hold question answers.
-questions = [{}] * len(units)
+questions = [{} for i in range(0, len(units))]
 
-
-debug_listed_data(units)
 
 # Step 3: loop over units to extract data into questions list.
 def get_elem_idx_by_text(unit: list, text: str) -> int:
@@ -237,19 +238,12 @@ def get_elem_idx_by_text(unit: list, text: str) -> int:
     for i, e in enumerate(unit):
         if e.text == text:
             return i
-    
-
-# # Extract the data.
-# # To avoid complicating things too much, do this in several passes.
-# # First pass is to collect the elements into units for each variable.
-# # Each unit is followed by a divider,
-# # and the first unit has no divider ahead of it.
-# def extract_to_units(soup: BeautifulSoup) -> list:
-#     units = []
-#     current_unit = []
-#     for tag in soup.children:
-#         if tag['type'] == DIVIDER_TYPE:
-#             pass
 
 
-# debug_shim(soup)
+for unit, q in zip(units, questions):
+    # Get variable name, length, and position field.
+    # These fields are always filled an only take up one line.
+    idx = get_elem_idx_by_text(unit, Field.variable_name.value)
+    q[Field.variable_name.name] = unit[idx + 1].text
+
+debug_listed_data(questions, 'debug_questions.txt')
