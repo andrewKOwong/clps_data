@@ -233,17 +233,36 @@ questions = [{} for i in range(0, len(units))]
 
 
 # Step 3: loop over units to extract data into questions list.
-def get_elem_idx_by_text(unit: list, text: str) -> int:
-    """Search a list of Elements for exact text match and return the index."""
-    for i, e in enumerate(unit):
-        if e.text == text:
-            return i
+def get_elem_by_text(unit: list, text: str) -> Element:
+    """Search a list of Elements for text in element text."""
+    for e in unit:
+        if text in e.text:
+            return e
+
+
+def get_variable_name(unit: list, tol=5) -> str:
+    # Set up triangulation boundaries
+    left_elem = get_elem_by_text(unit, Field.variable_name.value)
+    right_elem = get_elem_by_text(unit, Field.length.value)
+    l, t = left_elem.left, left_elem.top
+    r = right_elem.left
+    out = []
+    for e in unit:
+        if (l < e.left < r) and (t - 5 < e.top < t + 5):
+            out.append(e.text)
+    # Should only find one element
+    try:
+        assert len(out) == 1
+    except AssertionError:
+        raise AssertionError(
+            f"Found more than one element between "
+            f"{l}, {r}, and within {tol}px of {t}."
+            f"\nElements Founds:\n{out}"
+            )
+    return out[0]
 
 
 for unit, q in zip(units, questions):
-    # Get variable name, length, and position field.
-    # These fields are always filled an only take up one line.
-    idx = get_elem_idx_by_text(unit, Field.variable_name.value)
-    q[Field.variable_name.name] = unit[idx + 1].text
+    q[Field.variable_name.name] = get_variable_name(unit)
 
 debug_listed_data(questions, 'debug_questions.txt')
