@@ -262,7 +262,13 @@ def get_variable_name(unit: list, tol=5) -> str:
     return out[0]
 
 
+def get_length(unit: list):
+    return (get_elem_by_text(unit, Field.length.value)
+            .text.split(':')[1].strip())
+
+
 for unit, q in zip(units, questions):
     q[Field.variable_name.name] = get_variable_name(unit)
+    q[Field.length.name] = get_length(unit)
 
 debug_listed_data(questions, 'debug_questions.txt')
