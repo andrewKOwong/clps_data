@@ -15,7 +15,7 @@ class Field(Enum):
     variable_name = 'Variable Name:'
     length = 'Length:'
     position = 'Position:'
-    question_name = 'Question:'
+    question_name = 'Question Name:'
     concept = 'Concept:'
     question_text = 'Question Text:'
     universe = 'Universe:'
@@ -272,9 +272,44 @@ def get_position(unit: list):
             .text.split(':')[1].strip())
 
 
+def get_question_thru_source(
+        unit: list,
+        top: str,
+        bottom: str,
+        top_tol: int = 10,
+        bottom_buffer: int = 10,
+        value_left_location: int = 178) -> Element:
+
+    # Approximate position where text is expected to be,
+    # with buffer in case of minor irregularities
+    TEXT_LEFT_POS = 178
+    TEXT_LEFT_BUFFER = 5
+    # Left/right boundaries
+    l, r = TEXT_LEFT_POS - TEXT_LEFT_BUFFER, TEXT_LEFT_POS + TEXT_LEFT_BUFFER
+    # Get elements that are to the right of the top element
+    # but above the bottom element, within tolerance/buffers.
+    # Remember: top is a smaller number than bottom!
+    t = get_elem_by_text(unit, top).top - top_tol  # top boundary
+    b = get_elem_by_text(unit, bottom).top - bottom_buffer  # bottom boundary
+    out = []
+    for e in unit:
+        # print(t, b, l, r, '   ', e.left, e.top)
+        if (t < e.top < b) and (l < e.left < r):
+            out.append(e.text)
+    return ' '.join(out)
+
+
 for unit, q in zip(units, questions):
-    q[Field.variable_name.name] = get_variable_name(unit)
-    q[Field.length.name] = get_length(unit)
-    q[Field.position.name] = get_position(unit)
+    try:
+        q[Field.variable_name.name] = get_variable_name(unit)
+        q[Field.length.name] = get_length(unit)
+        q[Field.position.name] = get_position(unit)
+        q[Field.question_name.name] = get_question_thru_source(
+            unit, Field.question_name.value, Field.concept.value
+        )
+    except Exception as e:
+        raise Exception(
+            f"Unit causing error:\n\n{unit}."
+        ) from e
 
 debug_listed_data(questions, 'debug_questions.txt')
