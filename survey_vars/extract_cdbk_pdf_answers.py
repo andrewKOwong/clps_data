@@ -284,6 +284,7 @@ def get_question_thru_source(
     # with buffer in case of minor irregularities
     TEXT_LEFT_POS = 178
     TEXT_LEFT_BUFFER = 5
+    OUTPUT_JOIN_TOKEN = '\n'
     # Left/right boundaries
     l, r = TEXT_LEFT_POS - TEXT_LEFT_BUFFER, TEXT_LEFT_POS + TEXT_LEFT_BUFFER
     # Get elements that are to the right of the top element
@@ -296,17 +297,30 @@ def get_question_thru_source(
         # print(t, b, l, r, '   ', e.left, e.top)
         if (t < e.top < b) and (l < e.left < r):
             out.append(e.text)
-    return ' '.join(out)
+    return OUTPUT_JOIN_TOKEN.join(out)
 
 
+# By manual checking, the non question vars don't have
+# anything in source, or answer categories.
+NON_QUESTION_VARS = ['PUMFID', 'WTPP', 'VERDATE']
 for unit, q in zip(units, questions):
     try:
         q[Field.variable_name.name] = get_variable_name(unit)
         q[Field.length.name] = get_length(unit)
         q[Field.position.name] = get_position(unit)
         q[Field.question_name.name] = get_question_thru_source(
-            unit, Field.question_name.value, Field.concept.value
-        )
+            unit, Field.question_name.value, Field.concept.value)
+        q[Field.concept.name] = get_question_thru_source(
+            unit, Field.concept.value, Field.question_text.value)
+        q[Field.question_text.name] = get_question_thru_source(
+            unit, Field.question_text.value, Field.universe.value)
+        q[Field.universe.name] = get_question_thru_source(
+            unit, Field.universe.value, Field.note.value)
+        q[Field.note.name] = get_question_thru_source(
+            unit, Field.note.value, Field.source.value)
+        if q[Field.variable_name.name] not in NON_QUESTION_VARS:
+            q[Field.source.name] = get_question_thru_source(
+                unit, Field.source.value, Field.answer_categories.value)
     except Exception as e:
         raise Exception(
             f"Unit causing error:\n\n{unit}."
