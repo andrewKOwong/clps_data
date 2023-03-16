@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from bs4 import BeautifulSoup, Tag
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 import re
 
@@ -138,14 +138,23 @@ class Element:
     TEXT_TYPE = 'text'
     DIVIDER_TYPE = 'divider'
     elem_type: str
-    left: int  # Left position of the original html element
-    top: int  # Top position of the original html element
+    left: int  # Left position (pos) of the original html element
+    top: int  # Top pos of the original html element
+    width: int  # Width of the original html element
+    height: int  # Height of the original html element
+    right: int = field(init=False)  # Right pos of the original html element
+    bottom: int = field(init=False)  # Bottom pos of the original html element
     text: str = ''
 
     def __post_init__(self):
-        # Left and top are strs to be converted
+        # Convert to ints
         self.left = int(self.left)
         self.top = int(self.top)
+        self.width = int(self.width)
+        self.height = int(self.height)
+        # Calculate right and bottom positions
+        self.right = self.left + self.width
+        self.bottom = self.top + self.height
 
 
 # Create Element objects with loop.
@@ -166,9 +175,11 @@ for tag in soup.children:
         # Get 1 or more digits between left/top: and px;
         left = re.search(r"(?<=left:)\d+?(?=px;)", style).group(0)
         top = re.search(r"(?<=top:)\d+?(?=px;)", style).group(0)
-        if left is None or top is None:
+        width = re.search(r"(?<=width:)\d+?(?=px;)", style).group(0)
+        height = re.search(r"(?<=height:)\d+?(?=px;)", style).group(0)
+        if left is None or top is None or width is None or height is None:
             raise ValueError(
-                f"Did not find a left/top value."
+                f"Did not find a left/top/width/height value."
                 f"\n\nTag contents:\n"
                 f"{str(tag)}"
                 f"\n\nStyle attribute contents:\n"
@@ -184,7 +195,7 @@ for tag in soup.children:
                 type_val = Element.DIVIDER_TYPE
             case _:
                 raise ValueError("Unexpected non div/span element.")
-        elements.append(Element(type_val, left, top, tag.text))
+        elements.append(Element(type_val, left, top, width, height, tag.text))
 
 
 # Sorted elements will be in top to bottom order,
@@ -226,7 +237,7 @@ def group_elements(elements: list[Element]) -> list:
 
 units = group_elements(elements)
 
-debug_listed_data(units, 'debug_units.txt')
+debug_listed_data(units[1], 'debug_units.txt')
 
 # Step 2: initalize a list of dicts to hold question answers.
 questions = [{} for i in range(0, len(units))]
@@ -300,6 +311,72 @@ def get_question_thru_source(
     return OUTPUT_JOIN_TOKEN.join(out)
 
 
+def get_answer_fields(unit: list) -> list:
+    # Note: Headings might be split across more than one page.
+    # Note: Answer categories might be split across more than one line.
+
+    # Abbreviated local variables keys and values for convenience
+    # i.e. access keys/values with .name/.value
+    ANS = Field.answer_categories
+    CODE = Field.code
+    FREQ = Field.frequency
+    WEIGHTED = Field.weighted_frequency
+    PERC = Field.percent
+    # Position tolerance/buffer for elements in the same column
+    POS_TOL = 10
+    POS_BUFFER = 10
+    # Hardcoded right position of frequency heading
+    FREQ_RIGHT_POS = 386
+
+    out = {ANS.name: [],
+           CODE.name: [],
+           FREQ.name: [],
+           WEIGHTED.name: [],
+           PERC.name: []}
+
+    # Get all the columns
+    for heading in [ANS, CODE, FREQ, WEIGHTED, PERC]:
+        # Get the heading (units are presorted, so gets the first one)
+        heading_elem = get_elem_by_text(unit, heading.value)
+        # Get the top and right position
+        top = heading_elem.top
+        left = heading_elem.left
+        right = heading_elem.right
+        # Get all the elements in the same column
+        for e in unit:
+            # Skip element if not below the heading
+            # or if it's a secondary heading
+            if (e.top < top or (heading.value in e.text)):
+                continue
+            match heading.value:
+                # Answer categories are left aligned to their heading
+                case ANS.value:
+                    if left - POS_TOL < e.left < left + POS_TOL:
+                        out[heading.name].append(e.text)
+                # Frequency position is between the left position of the
+                # combined frequency and weighted frequency heading,
+                # and the hard-coded right position of the frequency column.
+                case FREQ.value:
+                    if left < e.left < FREQ_RIGHT_POS - POS_BUFFER:
+                        out[heading.name].append(e.text)
+                # Code/weighted frequency, and percentage are right aligned
+                case _:
+                    if right - POS_TOL < e.right < right + POS_TOL:
+                        out[heading.name].append(e.text)
+    return out
+
+    # Occasionally, the answer categories are split across two lines,
+    # but the second line is like... doesn't have a code.
+    # I don't think a single answer category ever gets split across
+    # more than two elements. Also, the code, frequency, etc. are
+    # split into two elements whenever there is a double line
+    # category.
+    # So I need to use this information to concatenate the second
+    # answer category line with the first one.
+
+    # There's also a ligatured ﬁ character that should be fi.
+
+
 # By manual checking, the non question vars don't have
 # anything in source, or answer categories.
 NON_QUESTION_VARS = ['PUMFID', 'WTPP', 'VERDATE']
@@ -321,9 +398,22 @@ for unit, q in zip(units, questions):
         if q[Field.variable_name.name] not in NON_QUESTION_VARS:
             q[Field.source.name] = get_question_thru_source(
                 unit, Field.source.value, Field.answer_categories.value)
+            q.update(get_answer_fields(unit))
     except Exception as e:
         raise Exception(
             f"Unit causing error:\n\n{unit}."
         ) from e
 
+
 debug_listed_data(questions, 'debug_questions.txt')
+
+test_questions = []
+for q in questions:
+    test_questions.append({k: q[k] for k in q if k in [
+        Field.answer_categories.name,
+        Field.code.name,
+        Field.frequency.name,
+        Field.weighted_frequency.name,
+        Field.percent.name
+    ]})
+debug_listed_data(test_questions, 'debug_questions_narrow.txt')
