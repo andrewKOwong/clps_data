@@ -390,6 +390,33 @@ def get_answer_fields(unit: list) -> list:
             # Strip whitespace after splitting on newlines
             out[k] = [split_and_strip(e) for e in v]
 
+    # Check that non-answer category/non-code columns have the
+    # same number of elements and subelements.
+    n_elems = []
+    n_sub_elems = []
+    for k, v in out.items():
+        if k not in [ANS.name, CODE.name]:
+            n_elems.append(len(v))
+            n_sub_elems.append(tuple(len(e) for e in v))
+    try:
+        assert len(set(n_elems)) == 1
+    except AssertionError as e:
+        raise AssertionError(
+            f"Non-answer category/non-code columns have different lengths."
+            f"\nLengths: {n_elems}"
+            f"\n{out}"
+            ) from e
+    try:
+        assert len(set(n_sub_elems)) == 1
+    except AssertionError as e:
+        raise AssertionError(
+            f"Non-answer category/non-code columns have different"
+            f" sub-element lengths."
+            f"\nLengths: {n_sub_elems}"
+            f"\n{out}"
+            ) from e
+
+
     return out
 
 
