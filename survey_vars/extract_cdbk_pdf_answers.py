@@ -249,6 +249,16 @@ def split_and_strip(s: str, sep: str = '\n') -> list:
     return [e.strip() for e in s.split(sep=sep)]
 
 
+def replace_characters(s: str, mapper: dict = {'ﬁ': 'fi'}) -> str:
+    """Replace characters in a string with other characters.
+
+    Useful for weird characters like ligatures.
+    """
+    for k, v in mapper.items():
+        s = s.replace(k, v)
+    return s
+
+
 def get_elem_by_text(unit: list, text: str) -> Element:
     """Search a list of Elements for text in element text."""
     for e in unit:
@@ -369,10 +379,10 @@ def get_answer_fields(unit: list) -> list:
                     if right - POS_TOL < e.right < right + POS_TOL:
                         out[heading.name].append(e.text)
 
-    # Convert ligatured character ﬁ character that should be fi.
+    # Convert weird characters such as ligatures.
     for v in out.values():
         for i, e in enumerate(v):
-            v[i] = e.replace('ﬁ', 'fi')
+            v[i] = replace_characters(e)
 
     # Split code, freq, weight freq, and percent into nested lists
     for k, v in out.items():
