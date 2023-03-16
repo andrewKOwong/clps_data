@@ -244,6 +244,11 @@ questions = [{} for i in range(0, len(units))]
 
 
 # Step 3: loop over units to extract data into questions list.
+def split_and_strip(s: str, sep: str = '\n') -> list:
+    """Split a string on newlines and strip each element."""
+    return [e.strip() for e in s.split(sep=sep)]
+
+
 def get_elem_by_text(unit: list, text: str) -> Element:
     """Search a list of Elements for text in element text."""
     for e in unit:
@@ -368,6 +373,12 @@ def get_answer_fields(unit: list) -> list:
     for v in out.values():
         for i, e in enumerate(v):
             v[i] = e.replace('ﬁ', 'fi')
+
+    # Split code, freq, weight freq, and percent into nested lists
+    for k, v in out.items():
+        if k in [CODE.name, FREQ.name, WEIGHTED.name, PERC.name]:
+            # Strip whitespace after splitting on newlines
+            out[k] = [split_and_strip(e) for e in v]
 
     return out
 
