@@ -363,18 +363,13 @@ def get_answer_fields(unit: list) -> list:
                 case _:
                     if right - POS_TOL < e.right < right + POS_TOL:
                         out[heading.name].append(e.text)
+
+    # Convert ligatured character ﬁ character that should be fi.
+    for v in out.values():
+        for i, e in enumerate(v):
+            v[i] = e.replace('ﬁ', 'fi')
+
     return out
-
-    # Occasionally, the answer categories are split across two lines,
-    # but the second line is like... doesn't have a code.
-    # I don't think a single answer category ever gets split across
-    # more than two elements. Also, the code, frequency, etc. are
-    # split into two elements whenever there is a double line
-    # category.
-    # So I need to use this information to concatenate the second
-    # answer category line with the first one.
-
-    # There's also a ligatured ﬁ character that should be fi.
 
 
 # By manual checking, the non question vars don't have
