@@ -415,7 +415,19 @@ def get_answer_fields(unit: list) -> list:
             f"\nLengths: {n_sub_elems}"
             f"\n{out}"
             ) from e
+    
+    # Get the number of answer categories and code elements/subelements
+    n_ans = len(out[ANS.name])
+    n_code = len(out[CODE.name])
+    n_ans_sub = [len(e) for e in out[ANS.name]] 
+    n_code_sub = [len(e) for e in out[CODE.name]]
+    # Verify that the total number of answer categories and code elements
+    # matches, taking into account and page breaks.
+    # If there is an extra line for an answer category, this will generate
+    # a page break.
 
+    # Whenever there is a end to a code element, and there are
+    
 
     return out
 
