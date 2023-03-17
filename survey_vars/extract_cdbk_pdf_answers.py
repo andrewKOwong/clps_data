@@ -326,6 +326,24 @@ def get_question_thru_source(
     return OUTPUT_JOIN_TOKEN.join(out)
 
 
+class PageBreak:
+    """Class to represent a page break.
+
+    Insert into list of elements to indicate a page break.
+    """
+    def __len__(self):
+        return 1
+
+
+class CodeElementBreak:
+    """Class to represent a break in the code elements.
+
+    Insert into list of elements to indicate a break in the code elements.
+    """
+    def __len__(self):
+        return 1
+
+
 def get_answer_fields(unit: list) -> list:
     # Note: Headings might be split across more than one page.
     # Note: Answer categories might be split across more than one line.
@@ -358,7 +376,7 @@ def get_answer_fields(unit: list) -> list:
         left = heading_elem.left
         right = heading_elem.right
         # Get all the elements in the same column
-        for e in unit:
+        for i, e in enumerate(unit):
             # Skip element if not below the heading
             # or if it's a secondary heading
             if (e.top < top or (heading.value in e.text)):
@@ -415,19 +433,123 @@ def get_answer_fields(unit: list) -> list:
             f"\nLengths: {n_sub_elems}"
             f"\n{out}"
             ) from e
-    
-    # Get the number of answer categories and code elements/subelements
-    n_ans = len(out[ANS.name])
-    n_code = len(out[CODE.name])
-    n_ans_sub = [len(e) for e in out[ANS.name]] 
-    n_code_sub = [len(e) for e in out[CODE.name]]
-    # Verify that the total number of answer categories and code elements
-    # matches, taking into account and page breaks.
-    # If there is an extra line for an answer category, this will generate
-    # a page break.
 
-    # Whenever there is a end to a code element, and there are
-    
+    # TODO: temporary code to ovewrite answer and code categories
+    out[ANS.name] = []
+    out[CODE.name] = []
+    for heading in [ANS, CODE]:
+        header_count = 0
+        # Get the heading (units are presorted, so gets the first one)
+        heading_elem = get_elem_by_text(unit, heading.value)
+        # Get the top and right position
+        top = heading_elem.top
+        left = heading_elem.left
+        right = heading_elem.right
+        # Get all the elements in the same column
+        for e in unit:
+            # Skip element if not below the heading
+            # or if it's a secondary heading
+            if e.top < top:
+                continue
+            if (heading.value in e.text):
+                if header_count == 0:
+                    header_count += 1
+                    continue
+                else:
+                    header_count += 1
+                    out[heading.name].append(PageBreak())
+                    continue
+            match heading.value:
+                # Answer categories are left aligned to their heading
+                case ANS.value:
+                    if left - POS_TOL < e.left < left + POS_TOL:
+                        out[heading.name].append(split_and_strip(e.text))
+                # Code/weighted frequency, and percentage are right aligned
+                case CODE.value:
+                    if right - POS_TOL < e.right < right + POS_TOL:
+                        out[heading.name].append(split_and_strip(e.text))
+
+    # Insert a break to represent the end of a block of code elements
+    code_out = []
+    for i, e in enumerate(out[CODE.name]):
+        if i > 0:
+            if (not isinstance(e, PageBreak)
+                    and not isinstance(out[CODE.name][i-1], PageBreak)):
+                code_out.append(CodeElementBreak())
+        code_out.append(e)
+
+    # Verify that the number of answer categories and code elements
+    # are the same, by counting CodeElementBreaks as additional item.
+    try:
+        a = sum([len(e) for e in out[ANS.name]])
+        b = []
+        for e in code_out:
+            try:
+                b.append(len(e))
+            except TypeError:
+                raise TypeError(f"Code element: {e}")
+        b = sum(b)
+        # b = sum([len(e) for e in code_out])
+        assert a == b
+    except AssertionError as e:
+        raise AssertionError(
+            f"Number of answer categories and code elements do not match."
+            f"\nN uncorrected answer categories elements: {out[ANS.name]}"
+            f"\nN code elements w/ breaks: {code_out}"
+        ) from e
+    except Exception as e:
+        raise Exception(
+            f"Answer cats: {out[ANS.name]}"
+            f"\nCode: {code_out}"
+        ) from e
+
+    out[CODE.name] = code_out
+
+    # Flatten the answer categories and code elements.
+    def flatten(lst: list):
+        out = []
+        for e in lst:
+            if isinstance(e, list):
+                out.extend(e)
+            else:
+                out.append(e)
+        return out
+
+    out[ANS.name] = flatten(out[ANS.name])
+    out[CODE.name] = flatten(out[CODE.name])
+
+    merged = [[a, c] for a, c in zip(out[ANS.name], out[CODE.name])]
+    ans_out = []
+    code_out = []
+    for i, (a, c) in enumerate(merged):
+        # Page Breaks should line up, skip the loop for page breaks.
+        if isinstance(a, PageBreak) or isinstance(c, PageBreak):
+            try:
+                assert isinstance(a, PageBreak) and isinstance(c, PageBreak)
+            except AssertionError as e:
+                raise AssertionError(
+                    f"Page break mismatch at {i}"
+                    f"\nAnswer: {a}"
+                    f"\nCode: {c}") from e
+            continue
+        elif isinstance(c, CodeElementBreak):
+            ans_out[-1] = ' '.join([ans_out[-1], a])
+        else:
+            ans_out.append(a)
+            code_out.append(c)
+
+    try:
+        assert len(ans_out) == len(code_out)
+    except AssertionError as e:
+        raise AssertionError(
+            f"Number of answer categories and code elements do not match "
+            f"after syncing."
+            f"\nAns Cats: {ans_out}"
+            f"\nCode: {code_out}"
+        ) from e
+
+    out[ANS.name] = ans_out
+    out[CODE.name] = code_out
 
     return out
 
