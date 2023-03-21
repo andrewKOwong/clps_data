@@ -399,6 +399,14 @@ def get_answer_fields(unit: list[Element]) -> list:
     POS_BUFFER = 10
     # Hardcoded right position of frequency heading
     FREQ_RIGHT_POS = 386
+    # Functions for converting strings to the correct type for total checking
+    TOTAL_CHECK_TYPE_FUNCS = {FREQ.name: int,
+                              WEIGHTED.name: int,
+                              PERC.name: float}
+    # Tolerance for total checking.
+    # Frequencies should be exact, but weighted frequencies and percentages
+    # may off from multiplying and rounding.
+    TOTAL_TOLS = {FREQ.name: 0, WEIGHTED.name: 1, PERC.name: 0.2}
 
     out = {ANS.name: [],
            CODE.name: [],
@@ -586,6 +594,22 @@ def get_answer_fields(unit: list[Element]) -> list:
         FREQ.name: out[FREQ.name].pop(),
         WEIGHTED.name: out[WEIGHTED.name].pop(),
         PERC.name: out[PERC.name].pop()}
+
+    # Verify that totals are within tolerance for freq/weight freq/perc.
+    for k in [FREQ.name, WEIGHTED.name, PERC.name]:
+        try:
+            s = sum(map(TOTAL_CHECK_TYPE_FUNCS[k], out[k]))
+            t = TOTAL_CHECK_TYPE_FUNCS[k](out[TOTAL.name][k])
+            diff = round(abs(s - t), 2)
+            tol = TOTAL_TOLS[k]
+            assert diff <= tol
+        except AssertionError as e:
+            raise AssertionError(
+                f"{k} total {t} does not match sum {s} "
+                f"within tolerance of {tol}."
+                f"\nDiff: {diff}."
+                f"\nData: {out[k]}"
+            ) from e
 
     return out
 
