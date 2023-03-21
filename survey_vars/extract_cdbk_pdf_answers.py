@@ -31,6 +31,9 @@ class Field(Enum):
 START_PAGE = 9  # First data page
 END_PAGE = 126  # Last data page (inclusive)
 
+# These are known characters that the pdf extractor erroneously extracts.
+FAULTY_CHARACTER_MAPPER = {'ﬁ': 'fi'}
+
 
 # Shim this in between steps of the pipeline during debugging
 # to write out an html file for inspection.
@@ -249,10 +252,17 @@ def split_and_strip(s: str, sep: str = '\n') -> list:
     return [e.strip() for e in s.split(sep=sep)]
 
 
-def replace_characters(s: str, mapper: dict = {'ﬁ': 'fi'}) -> str:
+def replace_characters(s: str, mapper: dict) -> str:
     """Replace characters in a string with other characters.
 
     Useful for weird characters like ligatures.
+
+    Args:
+        s: the string to replace characters in.
+        mapper: a dict mapping `to_be_replace: replacement`.
+
+    Returns:
+        The string with the characters replaced.
     """
     for k, v in mapper.items():
         s = s.replace(k, v)
@@ -563,7 +573,8 @@ def get_answer_fields(unit: list[Element]) -> list:
         # Convert weird characters such as ligatures.
         if k in [ANS.name, CODE.name]:
             for i, e in enumerate(v):
-                v[i] = replace_characters(e)
+                v[i] = replace_characters(e, FAULTY_CHARACTER_MAPPER)
+        # Remove commas from frequency and weighted frequency columns.
         if k in [FREQ.name, WEIGHTED.name]:
             for i, e, in enumerate(v):
                 v[i] = replace_characters(e, {',': ''})
