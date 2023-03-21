@@ -344,10 +344,37 @@ class CodeElementBreak:
         return 1
 
 
-def get_answer_fields(unit: list) -> list:
-    # Note: Headings might be split across more than one page.
-    # Note: Answer categories might be split across more than one line.
+def flatten(lst: list):
+    """Helper func for flattening a depth-2 nested lists."""
+    out = []
+    for e in lst:
+        if isinstance(e, list):
+            out.extend(e)
+        else:
+            out.append(e)
+    return out
 
+
+def get_answer_fields(unit: list[Element]) -> list:
+    """Get the answer fields from a unit.
+
+    There are several problems that need to be addressed:
+    - Answer fields may be split across multiple pages,
+      resulting in more than one set of column headings.
+      Occasionally, this occurs even within a single page.
+      In either case, this results in columns being extracted as multiple
+      elements.
+    - Text in the answer categories column might be split
+      across multiple lines. This results in the other columns containing
+      a blank space, which results in those columns being extracted
+      as multiple elements.
+    - There is at least one case where text extraction resulted in
+      a non-standard ligature character.
+
+    Args:
+        unit: A list of Elements corresponding to a single question.
+            This unit should be pre-sorted by top position, then left position.
+    """
     # Abbreviated local variables keys and values for convenience
     # i.e. access keys/values with .name/.value
     ANS = Field.answer_categories
@@ -367,90 +394,23 @@ def get_answer_fields(unit: list) -> list:
            WEIGHTED.name: [],
            PERC.name: []}
 
-    # Get all the columns
-    for heading in [ANS, CODE, FREQ, WEIGHTED, PERC]:
-        # Get the heading (units are presorted, so gets the first one)
-        heading_elem = get_elem_by_text(unit, heading.value)
-        # Get the top and right position
-        top = heading_elem.top
-        left = heading_elem.left
-        right = heading_elem.right
-        # Get all the elements in the same column
-        for i, e in enumerate(unit):
-            # Skip element if not below the heading
-            # or if it's a secondary heading
-            if (e.top < top or (heading.value in e.text)):
-                continue
-            match heading.value:
-                # Answer categories are left aligned to their heading
-                case ANS.value:
-                    if left - POS_TOL < e.left < left + POS_TOL:
-                        out[heading.name].append(e.text)
-                # Frequency position is between the left position of the
-                # combined frequency and weighted frequency heading,
-                # and the hard-coded right position of the frequency column.
-                case FREQ.value:
-                    if left < e.left < FREQ_RIGHT_POS - POS_BUFFER:
-                        out[heading.name].append(e.text)
-                # Code/weighted frequency, and percentage are right aligned
-                case _:
-                    if right - POS_TOL < e.right < right + POS_TOL:
-                        out[heading.name].append(e.text)
-
-    # Convert weird characters such as ligatures.
-    for v in out.values():
-        for i, e in enumerate(v):
-            v[i] = replace_characters(e)
-
-    # Split code, freq, weight freq, and percent into nested lists
-    for k, v in out.items():
-        if k in [CODE.name, FREQ.name, WEIGHTED.name, PERC.name]:
-            # Strip whitespace after splitting on newlines
-            out[k] = [split_and_strip(e) for e in v]
-
-    # Check that non-answer category/non-code columns have the
-    # same number of elements and subelements.
-    n_elems = []
-    n_sub_elems = []
-    for k, v in out.items():
-        if k not in [ANS.name, CODE.name]:
-            n_elems.append(len(v))
-            n_sub_elems.append(tuple(len(e) for e in v))
-    try:
-        assert len(set(n_elems)) == 1
-    except AssertionError as e:
-        raise AssertionError(
-            f"Non-answer category/non-code columns have different lengths."
-            f"\nLengths: {n_elems}"
-            f"\n{out}"
-            ) from e
-    try:
-        assert len(set(n_sub_elems)) == 1
-    except AssertionError as e:
-        raise AssertionError(
-            f"Non-answer category/non-code columns have different"
-            f" sub-element lengths."
-            f"\nLengths: {n_sub_elems}"
-            f"\n{out}"
-            ) from e
-
-    # TODO: temporary code to ovewrite answer and code categories
-    out[ANS.name] = []
-    out[CODE.name] = []
+    # First, deal with the answer category and code columns.
+    # We'll need to get the first heading, then get all the elements
+    # in the same column.
     for heading in [ANS, CODE]:
         header_count = 0
         # Get the heading (units are presorted, so gets the first one)
         heading_elem = get_elem_by_text(unit, heading.value)
-        # Get the top and right position
+        # Get heading positioning
         top = heading_elem.top
         left = heading_elem.left
         right = heading_elem.right
-        # Get all the elements in the same column
+        # Loop to get all elements in the same column.
         for e in unit:
-            # Skip element if not below the heading
-            # or if it's a secondary heading
+            # Skip if an element is above the first heading.
             if e.top < top:
                 continue
+            # If there's a secondary heading, add a page break element.
             if (heading.value in e.text):
                 if header_count == 0:
                     header_count += 1
@@ -464,12 +424,14 @@ def get_answer_fields(unit: list) -> list:
                 case ANS.value:
                     if left - POS_TOL < e.left < left + POS_TOL:
                         out[heading.name].append(split_and_strip(e.text))
-                # Code/weighted frequency, and percentage are right aligned
+                # Code values are right aligned to their heading
                 case CODE.value:
                     if right - POS_TOL < e.right < right + POS_TOL:
                         out[heading.name].append(split_and_strip(e.text))
-
-    # Insert a break to represent the end of a block of code elements
+    # Since answer categories sometimes takes two lines, thus
+    # breaking the corresponding code values into two elements,
+    # insert a break to represent the end of a block of code elements,
+    # provided that the next element is not a page break.
     code_out = []
     for i, e in enumerate(out[CODE.name]):
         if i > 0:
@@ -477,52 +439,45 @@ def get_answer_fields(unit: list) -> list:
                     and not isinstance(out[CODE.name][i-1], PageBreak)):
                 code_out.append(CodeElementBreak())
         code_out.append(e)
-
+    # Place back into output and cleanup
+    out[CODE.name] = code_out
+    del code_out
     # Verify that the number of answer categories and code elements
     # are the same, by counting CodeElementBreaks as additional item.
+    # (CodeElementBreaks and PageBreaks have __len__() == 1)
     try:
         a = sum([len(e) for e in out[ANS.name]])
-        b = []
-        for e in code_out:
-            try:
-                b.append(len(e))
-            except TypeError:
-                raise TypeError(f"Code element: {e}")
-        b = sum(b)
-        # b = sum([len(e) for e in code_out])
+    except TypeError:
+        raise TypeError(f"Answer elements: {out[ANS.name]}")
+    try:
+        b = sum(len(e) for e in out[CODE.name])
+    except TypeError:
+        raise TypeError(f"Code elements: {out[CODE.name]}")
+    try:
         assert a == b
     except AssertionError as e:
         raise AssertionError(
             f"Number of answer categories and code elements do not match."
             f"\nN uncorrected answer categories elements: {out[ANS.name]}"
-            f"\nN code elements w/ breaks: {code_out}"
+            f"\nN code elements w/ breaks: {out[CODE.name]}"
         ) from e
     except Exception as e:
         raise Exception(
             f"Answer cats: {out[ANS.name]}"
-            f"\nCode: {code_out}"
+            f"\nCode: {out[CODE.name]}"
         ) from e
-
-    out[CODE.name] = code_out
-
     # Flatten the answer categories and code elements.
-    def flatten(lst: list):
-        out = []
-        for e in lst:
-            if isinstance(e, list):
-                out.extend(e)
-            else:
-                out.append(e)
-        return out
-
     out[ANS.name] = flatten(out[ANS.name])
     out[CODE.name] = flatten(out[CODE.name])
-
+    # By going through zipped answers and codes, if we encounter a
+    # CodeElementBreak, we know that the previous answer category
+    # contains a line break, and we need to join the answer to the
+    # preceding answer.
     merged = [[a, c] for a, c in zip(out[ANS.name], out[CODE.name])]
     ans_out = []
     code_out = []
     for i, (a, c) in enumerate(merged):
-        # Page Breaks should line up, skip the loop for page breaks.
+        # Check that PageBreaks line up, and skip them if so.
         if isinstance(a, PageBreak) or isinstance(c, PageBreak):
             try:
                 assert isinstance(a, PageBreak) and isinstance(c, PageBreak)
@@ -533,11 +488,13 @@ def get_answer_fields(unit: list) -> list:
                     f"\nCode: {c}") from e
             continue
         elif isinstance(c, CodeElementBreak):
+            # Joining to the preceding answer upon CodeElementBreak
             ans_out[-1] = ' '.join([ans_out[-1], a])
         else:
+            # Append regular elements
             ans_out.append(a)
             code_out.append(c)
-
+    # The resulting answers/codes should be the same length.
     try:
         assert len(ans_out) == len(code_out)
     except AssertionError as e:
@@ -547,10 +504,64 @@ def get_answer_fields(unit: list) -> list:
             f"\nAns Cats: {ans_out}"
             f"\nCode: {code_out}"
         ) from e
-
+    # Place back into output and cleanup
     out[ANS.name] = ans_out
     out[CODE.name] = code_out
+    del ans_out, code_out
 
+    # Second, deal with frequency, weighted frequency, and percentage columns.
+    for heading in [FREQ, WEIGHTED, PERC]:
+        # Get the heading element
+        heading_elem = get_elem_by_text(unit, heading.value)
+        # Get heading positioning
+        top = heading_elem.top
+        left = heading_elem.left
+        right = heading_elem.right
+        # Loop to get all elements in the same column
+        for i, e in enumerate(unit):
+            # Skip element if not below the heading
+            # or if it's a secondary heading.
+            # Tracking pages breaks is not necessary here,
+            # compared to above when we were dealing with
+            # multiline answer categories.
+            if (e.top < top or (heading.value in e.text)):
+                continue
+            match heading.value:
+                # Frequency position is between the left position of the
+                # combined frequency and weighted frequency heading,
+                # and the hard-coded right position of the frequency column.
+                case FREQ.value:
+                    if left < e.left < FREQ_RIGHT_POS - POS_BUFFER:
+                        out[heading.name].append(e.text)
+                # Weighted frequency, and percentage are right aligned
+                case _:
+                    if right - POS_TOL < e.right < right + POS_TOL:
+                        out[heading.name].append(e.text)
+    # Split freq, weight freq, and percent into nested listed,
+    # strip whitespace, and flatten.
+    for k, v in out.items():
+        if k in [CODE.name, FREQ.name, WEIGHTED.name, PERC.name]:
+            out[k] = flatten([split_and_strip(e) for e in v])
+    # Check that frequency, weighted frequency, and percentage columns
+    # have the same number of elements.
+    n_elems = []
+    for k, v in out.items():
+        if k in [FREQ.name, WEIGHTED.name, PERC.name]:
+            n_elems.append(len(v))
+    try:
+        assert len(set(n_elems)) == 1
+    except AssertionError as e:
+        raise AssertionError(
+            f"Frequency, weighted frequency, and percentage columns have "
+            f"different lengths."
+            f"\nLengths: {n_elems}"
+            f"\n{out}"
+            ) from e
+
+    # Convert weird characters such as ligatures.
+    for v in out.values():
+        for i, e in enumerate(v):
+            v[i] = replace_characters(e)
     return out
 
 
