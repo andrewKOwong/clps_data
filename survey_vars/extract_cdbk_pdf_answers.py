@@ -26,6 +26,7 @@ class Field(Enum):
     frequency = 'Frequency'
     weighted_frequency = 'Weighted Frequency'
     percent = '%'
+    total = 'Total'
 
 
 START_PAGE = 9  # First data page
@@ -392,6 +393,7 @@ def get_answer_fields(unit: list[Element]) -> list:
     FREQ = Field.frequency
     WEIGHTED = Field.weighted_frequency
     PERC = Field.percent
+    TOTAL = Field.total
     # Position tolerance/buffer for elements in the same column
     POS_TOL = 10
     POS_BUFFER = 10
@@ -578,6 +580,13 @@ def get_answer_fields(unit: list[Element]) -> list:
         if k in [FREQ.name, WEIGHTED.name]:
             for i, e, in enumerate(v):
                 v[i] = replace_characters(e, {',': ''})
+
+    # Extract totals from freq, weighted freq, and percent columns.
+    out[TOTAL.name] = {
+        FREQ.name: out[FREQ.name].pop(),
+        WEIGHTED.name: out[WEIGHTED.name].pop(),
+        PERC.name: out[PERC.name].pop()}
+
     return out
 
 
@@ -618,6 +627,7 @@ for q in questions:
         Field.code.name,
         Field.frequency.name,
         Field.weighted_frequency.name,
-        Field.percent.name
+        Field.percent.name,
+        Field.total.name
     ]})
 debug_listed_data(test_questions, 'debug_questions_narrow.txt')
