@@ -558,10 +558,15 @@ def get_answer_fields(unit: list[Element]) -> list:
             f"\n{out}"
             ) from e
 
-    # Convert weird characters such as ligatures.
-    for v in out.values():
-        for i, e in enumerate(v):
-            v[i] = replace_characters(e)
+    # Text cleanup
+    for k, v in out.items():
+        # Convert weird characters such as ligatures.
+        if k in [ANS.name, CODE.name]:
+            for i, e in enumerate(v):
+                v[i] = replace_characters(e)
+        if k in [FREQ.name, WEIGHTED.name]:
+            for i, e, in enumerate(v):
+                v[i] = replace_characters(e, {',': ''})
     return out
 
 
