@@ -315,13 +315,12 @@ def get_question_thru_source(
         bottom: str,
         top_tol: int = 10,
         bottom_buffer: int = 10,
-        value_left_location: int = 178) -> Element:
+        value_left_location: int = 178) -> str:
 
     # Approximate position where text is expected to be,
     # with buffer in case of minor irregularities
     TEXT_LEFT_POS = 178
     TEXT_LEFT_BUFFER = 5
-    OUTPUT_JOIN_TOKEN = '\n'
     # Left/right boundaries
     l, r = TEXT_LEFT_POS - TEXT_LEFT_BUFFER, TEXT_LEFT_POS + TEXT_LEFT_BUFFER
     # Get elements that are to the right of the top element
@@ -331,10 +330,16 @@ def get_question_thru_source(
     b = get_elem_by_text(unit, bottom).top - bottom_buffer  # bottom boundary
     out = []
     for e in unit:
-        # print(t, b, l, r, '   ', e.left, e.top)
         if (t < e.top < b) and (l < e.left < r):
             out.append(e.text)
-    return OUTPUT_JOIN_TOKEN.join(out)
+
+    # Join with spaces, replace ligatures etc., then remove
+    # internal newlines and repeated whitespace, then rejoin.
+    out = ' '.join(out)
+    out = replace_characters(out, FAULTY_CHARACTER_MAPPER)
+    out = ' '.join(split_and_strip(out, sep='\n'))
+
+    return out
 
 
 class PageBreak:
