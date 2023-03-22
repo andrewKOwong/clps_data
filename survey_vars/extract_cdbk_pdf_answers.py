@@ -54,6 +54,7 @@ def debug_listed_data(data: list, out: str = 'debug.txt') -> None:
 
 
 # Parse args
+# Input file is the html output from running pdf2txt.py
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'cdbk_html',
@@ -91,7 +92,7 @@ soup = soup.body.extract()
 # and iterating through and appending until we get the div that
 # is right after the ending data page,
 # then reconstituting the strings into another soup object.
-# start_div whose child is an anchor for the start of page 9
+# start_div is a div whose child is an anchor for the start of page 9
 start_div = soup.select(f'a[name="{START_PAGE}"]')[0].parent
 html_doc = str(start_div)
 for tag in start_div.next_siblings:
@@ -238,8 +239,7 @@ if debug_mode:
     logging.debug(f"Elements written to {debug_elements_fp}.")
 
 
-# Extract the data over several steps.
-# Step 1: Group the elements into units corresponding
+# Group the elements into units corresponding
 # to each question. These are separated by divider elements.
 def group_elements(elements: list[Element]) -> list:
     """Group elements into units corresponding to question.
@@ -271,7 +271,9 @@ if debug_mode:
     logging.debug(f"Units written to {debug_units_fp}.")
 
 
-# Step 3: loop over units to extract data into questions list.
+# The following is helper funcs,
+# followed by extraction funcs (starting with get_variable_name)
+# for getting each data field.
 def split_and_strip(s: str, sep: str = '\n') -> list:
     """Split a string on newlines and strip each element."""
     return [e.strip() for e in s.split(sep=sep)]
