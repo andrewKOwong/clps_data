@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import re
 import json
+import logging
 
 
 class Field(Enum):
@@ -65,7 +66,18 @@ parser.add_argument(
     help="Output file name. Default is 'survey_vars.json'.",
     default="survey_vars.json"
 )
+parser.add_argument(
+    '-d',
+    '--debug',
+    help="Debug mode. Writes out intermediate files "
+         "for inspection to current directory.",
+    action='store_true'
+)
 args = parser.parse_args()
+
+# Set debug mode and debug logging
+debug_mode = args.debug
+logging.basicConfig(level=logging.DEBUG if debug_mode else logging.INFO)
 
 # Open and extract html
 p = Path(args.cdbk_html)
@@ -219,7 +231,10 @@ elements = sorted(elements, key=lambda e: int(e.top))
 for e in elements:
     e.text = e.text.strip()
 
-debug_listed_data(elements, 'debug_elements.txt')
+if debug_mode:
+    debug_elements_fp = 'debug_elements.txt'
+    debug_listed_data(elements, debug_elements_fp)
+    logging.debug(f"Elements written to {debug_elements_fp}.")
 
 
 # Extract the data over several steps.
@@ -249,7 +264,10 @@ def group_elements(elements: list[Element]) -> list:
 
 units = group_elements(elements)
 
-debug_listed_data(units[1], 'debug_units.txt')
+if debug_mode:
+    debug_units_fp = 'debug_units.txt'
+    debug_listed_data(units[1], debug_elements_fp)
+    logging.debug(f"Units written to {debug_units_fp}.")
 
 # Step 2: initalize a list of dicts to hold question answers.
 questions = [{} for i in range(0, len(units))]
@@ -659,19 +677,25 @@ for unit, q in zip(units, questions):
         ) from e
 
 
-debug_listed_data(questions, 'debug_questions.txt')
-
-test_questions = []
-for q in questions:
-    test_questions.append({k: q[k] for k in q if k in [
-        Field.answer_categories.name,
-        Field.code.name,
-        Field.frequency.name,
-        Field.weighted_frequency.name,
-        Field.percent.name,
-        Field.total.name
-    ]})
-debug_listed_data(test_questions, 'debug_questions_narrow.txt')
+if debug_mode:
+    debug_questions_fp = 'debug_questions.txt'
+    debug_listed_data(questions, debug_questions_fp)
+    logging.debug(f"Questions written to {debug_questions_fp}.")
+# Narrower debug output for just the answer categories
+if debug_mode:
+    debug_answers = []
+    for q in questions:
+        debug_answers.append({k: q[k] for k in q if k in [
+            Field.answer_categories.name,
+            Field.code.name,
+            Field.frequency.name,
+            Field.weighted_frequency.name,
+            Field.percent.name,
+            Field.total.name
+        ]})
+    debug_answers_fp = 'debug_answers.txt'
+    debug_listed_data(debug_answers, debug_answers_fp)
+    logging.debug(f"Answers written to {debug_answers_fp}.")
 
 with open(args.output, 'w') as f:
     json.dump(questions, f, indent=2)
