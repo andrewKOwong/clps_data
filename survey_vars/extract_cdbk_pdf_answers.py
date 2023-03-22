@@ -303,7 +303,16 @@ def get_elem_by_text(unit: list, text: str) -> Element:
             return e
 
 
-def get_variable_name(unit: list, tol=5) -> str:
+def get_variable_name(unit: list, tol: int = 5) -> str:
+    """Get variable name data.
+
+    Args:
+        unit: a list of Elements corresponding to a questionnaire question.
+        tol: tolerance for finding variable name element.
+
+    Returns:
+        The variable name as a string.
+    """
     # Set up triangulation boundaries
     left_elem = get_elem_by_text(unit, Field.variable_name.value)
     right_elem = get_elem_by_text(unit, Field.length.value)
@@ -326,11 +335,27 @@ def get_variable_name(unit: list, tol=5) -> str:
 
 
 def get_length(unit: list) -> str:
+    """Get length data.
+
+    Args:
+        unit: a list of Elements corresponding to a questionnaire question.
+
+    Returns:
+        The length as a string.
+    """
     return (get_elem_by_text(unit, Field.length.value)
             .text.split(':')[1].strip())
 
 
 def get_position(unit: list) -> str:
+    """Get position data.
+
+    Args:
+        unit: a list of Elements corresponding to a questionnaire question.
+
+    Returns:
+        The position as a string.
+    """
     return (get_elem_by_text(unit, Field.position.value)
             .text.split(':')[1].strip())
 
@@ -340,9 +365,32 @@ def get_question_thru_source(
         top: str,
         bottom: str,
         top_tol: int = 10,
-        bottom_buffer: int = 10,
-        value_left_location: int = 178) -> str:
+        bottom_buffer: int = 10) -> str:
+    """Get data from question through source fields.
 
+    This is a func for getting individual data fields that sit in the same
+    vertical column between the question name field down to the source field.
+
+    It works by supplying the desired heading as top, and the next heading
+    directly below as bottom. It then uses these headings to find the data
+    fields that sit between vertically.
+
+    Potentially this function could be refactored, as the vertical order
+    of the metadata fields is constant, and thus shouldn't need to be supplied.
+
+    Args:
+        unit: a list of Elements corresponding to a questionnaire question.
+        top: the actual heading value e.g. "Question Name:"
+             of the desired data field.
+        bottom: the heading value of the next data field below the desired
+            field.
+        top_tol: tolerance for finding top element.
+        bottom_buffer: buffer above the bottom elements for finding elements
+            between the top and bottom elements.
+
+    Returns:
+        The data as a string.
+    """
     # Approximate position where text is expected to be,
     # with buffer in case of minor irregularities
     TEXT_LEFT_POS = 178
@@ -369,7 +417,7 @@ def get_question_thru_source(
 
 
 class PageBreak:
-    """Class to represent a page break.
+    """Helper class to represent a page break.
 
     Insert into list of elements to indicate a page break.
     """
@@ -378,7 +426,7 @@ class PageBreak:
 
 
 class CodeElementBreak:
-    """Class to represent a break in the code elements.
+    """Helper class to represent a break in the code elements.
 
     Insert into list of elements to indicate a break in the code elements.
     """
@@ -672,9 +720,12 @@ def insert_blank_answer_categories(unit: list[Element]) -> None:
 # field of all other variables.
 # A quick hack is just to set them manually, as they have blank fields anyways.
 # Additionally, 'VERDATE' has answer columns, but an unnamed answer category,
-# and only a value for the code. Thus, it is also set manually,
-# since the way get_answer_fields is written checks for matching answer
-# categories and codes.
+# and only a value for the code.
+# This could cause errors in get_answer_fields as get_answer_fields
+# does checks to make sure the number elements matchs in
+# answer and code columns.
+# To get around this, insert an Element with an empty str to mimic a
+# unnamed answer category.
 NON_ANSWER_VARS = ['PUMFID', 'WTPP']
 # Initalize a list of dicts to hold question answers.
 questions = [{} for i in range(0, len(units))]
