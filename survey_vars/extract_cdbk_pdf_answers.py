@@ -299,12 +299,12 @@ def get_variable_name(unit: list, tol=5) -> str:
     return out[0]
 
 
-def get_length(unit: list):
+def get_length(unit: list) -> str:
     return (get_elem_by_text(unit, Field.length.value)
             .text.split(':')[1].strip())
 
 
-def get_position(unit: list):
+def get_position(unit: list) -> str:
     return (get_elem_by_text(unit, Field.position.value)
             .text.split(':')[1].strip())
 
@@ -360,7 +360,7 @@ class CodeElementBreak:
         return 1
 
 
-def flatten(lst: list):
+def flatten(lst: list) -> list:
     """Helper func for flattening a depth-2 nested lists."""
     out = []
     for e in lst:
@@ -371,7 +371,7 @@ def flatten(lst: list):
     return out
 
 
-def get_answer_fields(unit: list[Element]) -> list:
+def get_answer_fields(unit: list[Element]) -> dict:
     """Get the answer fields from a unit.
 
     There are several problems that need to be addressed:
@@ -390,6 +390,10 @@ def get_answer_fields(unit: list[Element]) -> list:
     Args:
         unit: A list of Elements corresponding to a single question.
             This unit should be pre-sorted by top position, then left position.
+
+    Returns:
+        A dict mapping column headings to data, including a extra key
+        'total' for the total row.
     """
     # Abbreviated local variables keys and values for convenience
     # i.e. access keys/values with .name/.value
