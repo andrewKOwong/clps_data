@@ -297,7 +297,7 @@ def replace_characters(s: str, mapper: dict) -> str:
 
 
 def get_elem_by_text(unit: list, text: str) -> Element:
-    """Search a list of Elements for text in element text."""
+    """Search a list of Elements for the first element with provided text."""
     for e in unit:
         if text in e.text:
             return e
