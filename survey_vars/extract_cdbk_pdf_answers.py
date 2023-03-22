@@ -270,9 +270,6 @@ if debug_mode:
     debug_listed_data(units[1], debug_elements_fp)
     logging.debug(f"Units written to {debug_units_fp}.")
 
-# Step 2: initalize a list of dicts to hold question answers.
-questions = [{} for i in range(0, len(units))]
-
 
 # Step 3: loop over units to extract data into questions list.
 def split_and_strip(s: str, sep: str = '\n') -> list:
@@ -677,6 +674,8 @@ def insert_blank_answer_categories(unit: list[Element]) -> None:
 # since the way get_answer_fields is written checks for matching answer
 # categories and codes.
 NON_ANSWER_VARS = ['PUMFID', 'WTPP']
+# Initalize a list of dicts to hold question answers.
+questions = [{} for i in range(0, len(units))]
 for unit, q in zip(units, questions):
     try:
         q[Field.variable_name.name] = get_variable_name(unit)
