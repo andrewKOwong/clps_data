@@ -57,7 +57,8 @@ def debug_listed_data(data: list, out: str = 'debug.txt') -> None:
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'cdbk_html',
-    help="pdf2txt.py codebook.pdf -o codebook.html --output_type html"
+    help="HTML output from running e.g. "
+         "`pdf2txt.py codebook.pdf -o codebook.html --output_type html`"
 )
 # Output file
 parser.add_argument(
