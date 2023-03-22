@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup, Tag
 from dataclasses import dataclass, field
 from enum import Enum
 import re
+import json
 
 
 class Field(Enum):
@@ -56,6 +57,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     'cdbk_html',
     help="pdf2txt.py codebook.pdf -o codebook.html --output_type html"
+)
+# Output file
+parser.add_argument(
+    '-o',
+    '--output',
+    help="Output file name. Default is 'survey_vars.json'.",
+    default="survey_vars.json"
 )
 args = parser.parse_args()
 
@@ -664,3 +672,6 @@ for q in questions:
         Field.total.name
     ]})
 debug_listed_data(test_questions, 'debug_questions_narrow.txt')
+
+with open(args.output, 'w') as f:
+    json.dump(questions, f, indent=2)
