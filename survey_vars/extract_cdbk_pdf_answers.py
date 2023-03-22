@@ -649,8 +649,27 @@ def get_answer_fields(unit: list[Element]) -> dict:
     return out
 
 
-# By manual checking, the non question vars don't have
-# anything in source, or answer categories.
+def insert_blank_answer_categories(unit: list[Element]) -> None:
+    """Helper func to insert a blank answer category Element.
+
+    For the 'VERDATE' variable, there is an unnamed answer category
+    which will cause exceptions in the get_answer_fields function.
+
+    Args:
+        unit (list[Elements]): A list of Elements for a single unit.
+    """
+    pass
+
+
+# Get data fields for each unit.
+# By manual checking, 'PUMFID' and 'WTPP' don't have answer categories.
+# Thus, they don't have answer columns used for locating the source
+# field of all other variables.
+# A quick hack is just to set them manually, as they have blank fields anyways.
+# Additionally, 'VERDATE' has answer columns, but an unnamed answer category,
+# and only a value for the code. Thus, it is also set manually,
+# since the way get_answer_fields is written checks for matching answer
+# categories and codes.
 NON_QUESTION_VARS = ['PUMFID', 'WTPP', 'VERDATE']
 for unit, q in zip(units, questions):
     try:
@@ -667,7 +686,9 @@ for unit, q in zip(units, questions):
             unit, Field.universe.value, Field.note.value)
         q[Field.note.name] = get_question_thru_source(
             unit, Field.note.value, Field.source.value)
-        if q[Field.variable_name.name] not in NON_QUESTION_VARS:
+        if (var_name := q[Field.variable_name.name]) in NON_QUESTION_VARS:
+            q[Field.source.name] = ''
+        else:
             q[Field.source.name] = get_question_thru_source(
                 unit, Field.source.value, Field.answer_categories.value)
             q.update(get_answer_fields(unit))
