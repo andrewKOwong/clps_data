@@ -650,7 +650,7 @@ def get_answer_fields(unit: list[Element]) -> dict:
 
 
 def insert_blank_answer_categories(unit: list[Element]) -> None:
-    """Helper func to insert a blank answer category Element.
+    """Helper func to append (in-place) a blank answer category Element.
 
     For the 'VERDATE' variable, there is an unnamed answer category
     which will cause exceptions in the get_answer_fields function.
@@ -658,7 +658,12 @@ def insert_blank_answer_categories(unit: list[Element]) -> None:
     Args:
         unit (list[Elements]): A list of Elements for a single unit.
     """
-    pass
+    answer_heading = get_elem_by_text(unit, Field.answer_categories.value)
+    e = Element(
+        Element.TEXT_TYPE,
+        left=answer_heading.left, top=answer_heading.top + 10,
+        width=10, height=10, text='')
+    unit.append(e)
 
 
 # Get data fields for each unit.
@@ -670,7 +675,7 @@ def insert_blank_answer_categories(unit: list[Element]) -> None:
 # and only a value for the code. Thus, it is also set manually,
 # since the way get_answer_fields is written checks for matching answer
 # categories and codes.
-NON_QUESTION_VARS = ['PUMFID', 'WTPP', 'VERDATE']
+NON_ANSWER_VARS = ['PUMFID', 'WTPP']
 for unit, q in zip(units, questions):
     try:
         q[Field.variable_name.name] = get_variable_name(unit)
@@ -686,11 +691,16 @@ for unit, q in zip(units, questions):
             unit, Field.universe.value, Field.note.value)
         q[Field.note.name] = get_question_thru_source(
             unit, Field.note.value, Field.source.value)
-        if (var_name := q[Field.variable_name.name]) in NON_QUESTION_VARS:
+        # Set source to blank for variables without answer categories.
+        if q[Field.variable_name.name] in NON_ANSWER_VARS:
             q[Field.source.name] = ''
         else:
             q[Field.source.name] = get_question_thru_source(
                 unit, Field.source.value, Field.answer_categories.value)
+        # Insert blank answer category for 'VERDATE' variable.
+        if q[Field.variable_name.name] == 'VERDATE':
+            insert_blank_answer_categories(unit)
+        if q[Field.variable_name.name] not in NON_ANSWER_VARS:
             q.update(get_answer_fields(unit))
     except Exception as e:
         raise Exception(
