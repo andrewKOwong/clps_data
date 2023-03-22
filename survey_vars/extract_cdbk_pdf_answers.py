@@ -697,5 +697,6 @@ if debug_mode:
     debug_listed_data(debug_answers, debug_answers_fp)
     logging.debug(f"Answers written to {debug_answers_fp}.")
 
+# Write the output to a JSON file.
 with open(args.output, 'w') as f:
     json.dump(questions, f, indent=2)
