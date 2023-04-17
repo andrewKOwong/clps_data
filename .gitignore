@@ -1,7 +1,3 @@
-# Ignore main unaltered data and bootstrap files
-data/bootstraps.csv
-data/clps.csv
-
 # VSCODE
 .vscode
 
