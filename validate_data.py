@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 import pandas as pd
-import pandera as pa
+from pandera import Column, DataFrameSchema
 
 
 INPUT_FP_KEY = "input_fp"
@@ -39,8 +39,11 @@ def read_data(fp: str) -> pd.DataFrame:
     return pd.read_csv(fp)
 
 
-def define_schema() -> pa.DataFrameSchema:
-    pass
+def define_schema() -> DataFrameSchema:
+    schema = DataFrameSchema({
+        "PUMFID": Column(int, unique=True)
+    })
+    return schema
 
 
 def main() -> None:
@@ -50,7 +53,9 @@ def main() -> None:
     input_fp = args[INPUT_FP_KEY]
     raw_df = read_data(input_fp)
     # Define a pandera schema
+    schema = define_schema()
     # Validate the data
+    schema(raw_df, lazy=True)
 
 
 if __name__ == "__main__":
