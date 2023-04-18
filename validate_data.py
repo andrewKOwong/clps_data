@@ -2,8 +2,8 @@ import argparse
 import json
 import pathlib
 import pandas as pd
-from pandera import Column, DataFrameSchema
-from clps.constants import survey_vars_keys as svk
+from pandera import Column, DataFrameSchema, Check
+from clps.constants import survey_vars_keys as SVK
 
 
 INPUT_FP_KEY = "input_fp"
@@ -66,13 +66,42 @@ def read_survey_vars(fp: str) -> dict:
     with open(fp, "r") as f:
         data = json.load(f)
     # Format the JSON to key by variable name
-    return {e[svk.VAR_NAME]: e for e in data}
+    return {e[SVK.VAR_NAME]: e for e in data}
 
 
-def define_schema() -> DataFrameSchema:
+def define_schema(survey_vars: dict) -> DataFrameSchema:
+    """Define a validation schema for the data.
+
+    Args:
+        survey_vars (dict): Dictionary of survey variables, keyed to each
+            survey variable name.
+
+    Returns:
+        DataFrameSchema: Pandera schema for the data."""
+    # These are the variables that don't have answers
+    NON_ANSWER_VARS = ['PUMFID', 'WTPP']
+    # Schema for non answer variables.
     schema = DataFrameSchema({
-        "PUMFID": Column(int, unique=True)
+        "PUMFID": Column(int, unique=True, coerce=True),
+        "WTPP": Column(float, coerce=True),
     })
+    # All the other answer-containing variables have answer codes.
+    # Check these against the codebook extract.
+    for k in survey_vars.keys():
+        if k not in NON_ANSWER_VARS:
+            # Codebook extract are strings (e.g. "01"), so convert to int
+            codes = [int(e) for e in survey_vars[k][SVK.CODE]]
+            # Update the schema
+            schema = schema.add_columns({
+                k: Column(
+                    int,
+                    coerce=True,
+                    checks=Check(
+                        lambda s: s.isin(codes))
+                )
+            })
+    # Note, by default pandera disallows null values, which matches
+    # the assumption that this dataset should not have null values.
     return schema
 
 
@@ -85,8 +114,8 @@ def main() -> None:
     # Read survey variables JSON
     survey_vars_fp = args[SURVEY_VARS_FP_KEY]
     survey_vars = read_survey_vars(survey_vars_fp)
-    # Define a pandera schema
-    schema = define_schema()
+    # Generate validation schema
+    schema = define_schema(survey_vars)
     # Validate the data
     schema(raw_df, lazy=True)
 
