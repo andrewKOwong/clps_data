@@ -8,6 +8,12 @@ from clps.constants import survey_vars_keys as SVK
 
 INPUT_FP_KEY = "input_fp"
 SURVEY_VARS_FP_KEY = "survey_vars_fp"
+# This survey variable is a special case, as it's codebook actually
+# collapses codes 01 - 16 as a "01 - 16" string.
+PROBCNTP_KEY = "PROBCNTP"
+# This survey variable is a special case, as it's codebook only has a
+# date string for its code.
+VERDATE_KEY = "VERDATE"
 
 
 def get_args() -> dict:
@@ -69,6 +75,53 @@ def read_survey_vars(fp: str) -> dict:
     return {e[SVK.VAR_NAME]: e for e in data}
 
 
+def validate_codes(s: pd.Series, survey_var: dict) -> bool:
+    """Helper func to validate codes against the codebook.
+
+    Args:
+        s (pd.Series): Column to be validated. Must be intable columbn.
+        survey_var (dict): Dictionary of a single survey variable.
+    """
+    # Codebook extract are strings (e.g. "01"), so convert to int
+    codes = [int(e) for e in survey_var[SVK.CODE]]
+    return s.isin(codes)
+
+
+def validate_PROBCNTP_codes(s, survey_var):
+    """Helper func to validate PROBCNTP codes.
+
+    This is a special case, as the codebook entry collapses codes 01 - 16
+    to a single '01 - 16' text string.
+
+    Args:
+        s (pd.Series): Column to be validated.
+        survey_var (dict): Dictionary of a single survey variable.
+    """
+    codes = []
+    for c in survey_var[SVK.CODE]:
+        try:
+            # Normal intable codes
+            c = codes.append(int(c))
+        except ValueError:
+            # Expand '01 - 16' string to list of ints
+            c = c.split(" - ")
+            c = list(range(int(c[0]), int(c[1]) + 1))
+            codes.extend(c)
+    return s.isin(codes)
+
+
+def validate_VERDATE_codes(s, survey_var):
+    """Helper func to validate VERDATE codes.
+
+    This is a special case, as VERDATE only has a date string for its code.
+
+    Args:
+        s (pd.Series): Column to be validated.
+        survey_var (dict): Dictionary of a single survey variable."""
+    codes = survey_var[SVK.CODE]
+    return s.isin(codes)
+
+
 def define_schema(survey_vars: dict) -> DataFrameSchema:
     """Define a validation schema for the data.
 
@@ -87,19 +140,25 @@ def define_schema(survey_vars: dict) -> DataFrameSchema:
     })
     # All the other answer-containing variables have answer codes.
     # Check these against the codebook extract.
-    for k in survey_vars.keys():
-        if k not in NON_ANSWER_VARS:
-            # Codebook extract are strings (e.g. "01"), so convert to int
-            codes = [int(e) for e in survey_vars[k][SVK.CODE]]
-            # Update the schema
-            schema = schema.add_columns({
-                k: Column(
-                    int,
-                    coerce=True,
-                    checks=Check(
-                        lambda s: s.isin(codes))
-                )
-            })
+    # For loop through only variables with answer sections.
+    for k in [k for k in survey_vars.keys() if k not in NON_ANSWER_VARS]:
+        current_var = survey_vars[k]
+        col_kwargs = {'coerce': True}
+        if k == VERDATE_KEY:
+            # This is a special case, as the codebook entry is a date string
+            col_kwargs['dtype'] = str
+            col_kwargs['checks'] = Check(
+                validate_VERDATE_codes, survey_var=current_var)
+        elif k == PROBCNTP_KEY:
+            col_kwargs['dtype'] = int
+            col_kwargs['checks'] = Check(
+                validate_PROBCNTP_codes, survey_var=current_var)
+        else:
+            col_kwargs['dtype'] = int
+            col_kwargs['checks'] = Check(
+                validate_codes, survey_var=current_var)
+        # Update the schema
+        schema = schema.add_columns({k: Column(**col_kwargs)})
     # Note, by default pandera disallows null values, which matches
     # the assumption that this dataset should not have null values.
     return schema
