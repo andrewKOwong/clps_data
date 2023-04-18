@@ -1,3 +1,5 @@
+# This is a list of keys used in the survey_vars.json file,
+# i.e. data extracted from the codebook.
 VAR_NAME = 'variable_name'
 LENGTH = 'length'
 POSITION = 'position'
