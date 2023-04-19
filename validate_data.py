@@ -224,11 +224,11 @@ def define_schema(survey_vars: dict) -> DataFrameSchema:
     Returns:
         DataFrameSchema: Pandera schema for the data."""
     # These are the variables that don't have answers
-    NON_ANSWER_VARS = ['PUMFID', 'WTPP']
+    NON_ANSWER_VARS = [PUMFID_KEY, WTPP_KEY]
     # Schema for non answer variables.
     schema = DataFrameSchema({
-        "PUMFID": Column(int, unique=True, coerce=True),
-        "WTPP": Column(float, coerce=True),
+        PUMFID_KEY: Column(int, unique=True, coerce=True),
+        WTPP_KEY: Column(float, coerce=True),
     })
     # All the other answer-containing variables have answer codes.
     # Check these against the codebook extract.
