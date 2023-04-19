@@ -122,6 +122,94 @@ def validate_VERDATE_codes(s, survey_var):
     return s.isin(codes)
 
 
+def validate_freqs(s: pd.Series, survey_var: dict) -> bool:
+    """Helper func to validate frequencies against the codebook.
+
+    Args:
+        s (pd.Series): Column to be validated.
+        survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if frequencies match, False otherwise."""
+    # Get value counts of the column, and reorder according to their order
+    # in the codebook.
+    codes = [int(e) for e in survey_var[SVK.CODE]]
+    freqs = [int(e) for e in survey_var[SVK.FREQUENCY]]
+    # Reorder the value_counts according to the codebook,
+    # then drop the index to compare.
+    s = s.value_counts().reindex(codes)
+    s = s.reset_index(drop=True)
+    # Compare to the frequencies in the codebook.
+    return s.equals(pd.Series(freqs))
+
+
+def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict):
+    """Helper func to validate PROBCNTP frequencies.
+
+    This is a special case, as the codebook entry collapses codes 01 - 16
+    to a single '01 - 16' text string.
+
+    Args:
+        s (pd.Series): Column to be validated.
+        survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if frequencies match, False otherwise."""
+    SUMMED_CODE = -1
+    # Get frequencies
+    freqs = [int(e) for e in survey_var[SVK.FREQUENCY]]
+
+    raw_codes = survey_var[SVK.CODE]
+    int_codes = [int(e) for e in raw_codes if e.isdigit()]
+    # str_code refers to the '01 - 16' code
+    str_code = [e for e in raw_codes if not e.isdigit()]
+    try:
+        assert len(str_code) == 1
+    except AssertionError:
+        raise ValueError("Expected only one string code in PROBCNTP codes.")
+    # Expand the string code into a list of ints
+    expand_str_code = str_code[0].split(" - ")
+    expand_str_code = list(range(int(expand_str_code[0]),
+                                 int(expand_str_code[1]) + 1))
+
+    # Substitute raw codes to int, except for the summed code
+    final_codes = [int(e) if e.isdigit() else SUMMED_CODE for e in raw_codes]
+    # Get the value counts of the PROBCNTP column and split it into the
+    # intable codes and the string code, sum up the that belong with
+    # the string code, the concatenate into a final series, before
+    # reordering.
+    s = s.value_counts()
+    int_s = s[s.index.isin(int_codes)]
+    str_s = s[s.index.isin(expand_str_code)]
+    str_s = pd.Series([str_s.sum()], index=[SUMMED_CODE])
+    final_s = pd.concat([int_s, str_s])
+    final_s = final_s.reindex(final_codes)
+    # Drop the indexes now that the order is correct
+    final_s = final_s.reset_index(drop=True)
+    return final_s.equals(pd.Series(freqs))
+
+
+def validate_VERDATE_freqs(s, survey_var):
+    """Helper func to validate VERDATE frequencies.
+
+    This is a special case, as VERDATE only has a date string for its code.
+
+    Args:
+        s (pd.Series): Column to be validated.
+        survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if frequencies match, False otherwise."""
+    freqs = [int(e) for e in survey_var[SVK.FREQUENCY]]
+    # Get value counts of the column, and reorder according to their order
+    # in the codebook.
+    s = s.value_counts().reindex(survey_var[SVK.CODE])
+    # Reset index now that order is correct.
+    s = s.reset_index(drop=True)
+    # Compare to the frequencies in the codebook.
+    return s.equals(pd.Series(freqs))
+
+
 def define_schema(survey_vars: dict) -> DataFrameSchema:
     """Define a validation schema for the data.
 
@@ -147,16 +235,19 @@ def define_schema(survey_vars: dict) -> DataFrameSchema:
         if k == VERDATE_KEY:
             # This is a special case, as the codebook entry is a date string
             col_kwargs['dtype'] = str
-            col_kwargs['checks'] = Check(
-                validate_VERDATE_codes, survey_var=current_var)
+            col_kwargs['checks'] = [
+                Check(validate_VERDATE_codes, survey_var=current_var),
+                Check(validate_VERDATE_freqs, survey_var=current_var)]
         elif k == PROBCNTP_KEY:
             col_kwargs['dtype'] = int
-            col_kwargs['checks'] = Check(
-                validate_PROBCNTP_codes, survey_var=current_var)
+            col_kwargs['checks'] = [
+                Check(validate_PROBCNTP_codes, survey_var=current_var),
+                Check(validate_PROBCNTP_freqs, survey_var=current_var)]
         else:
             col_kwargs['dtype'] = int
-            col_kwargs['checks'] = Check(
-                validate_codes, survey_var=current_var)
+            col_kwargs['checks'] = [
+                Check(validate_codes, survey_var=current_var),
+                Check(validate_freqs, survey_var=current_var)]
         # Update the schema
         schema = schema.add_columns({k: Column(**col_kwargs)})
     # Note, by default pandera disallows null values, which matches
@@ -176,7 +267,7 @@ def main() -> None:
     # Generate validation schema
     schema = define_schema(survey_vars)
     # Validate the data
-    schema(raw_df, lazy=True)
+    schema.validate(raw_df, lazy=True)
 
 
 if __name__ == "__main__":
