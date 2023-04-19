@@ -8,6 +8,10 @@ from clps.constants import survey_vars_keys as SVK
 
 INPUT_FP_KEY = "input_fp"
 SURVEY_VARS_FP_KEY = "survey_vars_fp"
+# Respondents id
+PUMFID_KEY = "PUMFID"
+# Respondents weights
+WTPP_KEY = "WTPP"
 # This survey variable is a special case, as it's codebook actually
 # collapses codes 01 - 16 as a "01 - 16" string.
 PROBCNTP_KEY = "PROBCNTP"
