@@ -3,6 +3,7 @@ import json
 import pathlib
 import pandas as pd
 from pandera import Column, DataFrameSchema, Check
+# from pandera.errors import SchemaErrors
 from clps.constants import survey_vars_keys as SVK
 
 
@@ -214,6 +215,129 @@ def validate_VERDATE_freqs(s, survey_var):
     return s.equals(pd.Series(freqs))
 
 
+def validate_wt_freqs(
+        df: pd.DataFrame,
+        col_key: str,
+        survey_var: dict) -> bool:
+    """Wide DataFrame check function to validate weighted frequencies.
+
+    This is meant to be used for checks that operate on the entire dataframe,
+    e.g. under DataFrameSchema(checks=[...]). The reason for using this rather
+    than a Column check is that weighted frequencies require the weight column
+    and a survey variable column simultaneously (i.e. a weighted frequency is a
+    sum of the weights grouped by answer codes.)
+
+    Args:
+        df (pd.DataFrame): input DataFrame to be validated."""
+    # Ordered codes and weighted frequencies from codebook
+    codes = [int(e) for e in survey_var[SVK.CODE]]
+    wt_freqs = [int(e) for e in survey_var[SVK.WEIGHTED_FREQUENCY]]
+    # Get the column and the weights, sum the weights,
+    # and reorder according to the codebook.
+    out = (
+        df[[col_key, WTPP_KEY]].copy()
+        .groupby(col_key)
+        .sum()
+        [WTPP_KEY]
+        .reindex(codes)
+        .reset_index(drop=True)
+        # Weights are many decimal places, so round to match codebook.
+        .round()
+        .astype(int)
+    )
+    # Compare to the weighted frequencies in the codebook.
+    return out.equals(pd.Series(wt_freqs))
+
+
+def validate_VERDATE_wt_freqs(
+        df: pd.DataFrame,
+        col_key: str,
+        survey_var: dict) -> bool:
+    """Wide DataFrame check function to validate VERDATE weighted frequencies.
+
+    This is basically the same as validate_wt_freqs, but without inting the
+    codes, as VERDATE only has a date string for its code.
+
+    Args:
+        df (pd.DataFrame): input DataFrame to be validated."""
+    # Ordered codes and weighted frequencies from codebook
+    codes = survey_var[SVK.CODE]
+    wt_freqs = [int(e) for e in survey_var[SVK.WEIGHTED_FREQUENCY]]
+    # Get the column and the weights, sum the weights,
+    # and reorder according to the codebook.
+    out = (
+        df[[col_key, WTPP_KEY]].copy()
+        .groupby(col_key)
+        .sum()
+        [WTPP_KEY]
+        .reindex(codes)
+        .reset_index(drop=True)
+        # Weights are many decimal places, so round to match codebook.
+        .round()
+        .astype(int)
+    )
+    # Compare to the weighted frequencies in the codebook.
+    return out.equals(pd.Series(wt_freqs))
+
+
+def validate_PROBCNTP_wt_freqs(
+        df: pd.DataFrame,
+        col_key: str,
+        survey_var: dict) -> bool:
+    """Wide DataFrame check function to validate PROBCNTP weighted frequencies.
+
+    This is a special case, as the codebook entry collapses codes 01 - 16
+    to a single '01 - 16' text string.
+
+    Args:
+        df (pd.DataFrame): input DataFrame to be validated.
+        survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if frequencies match, False otherwise."""
+    SUMMED_CODE = -1
+    # Ordered codes and weighted frequencies from codebook
+    wt_freqs = [int(e) for e in survey_var[SVK.WEIGHTED_FREQUENCY]]
+
+    raw_codes = survey_var[SVK.CODE]
+    str_code = [e for e in raw_codes if not e.isdigit()]
+    try:
+        assert len(str_code) == 1
+    except AssertionError:
+        raise ValueError("Expected only one string code in PROBCNTP codes.")
+    expand_str_code = str_code[0].split(" - ")
+    expand_str_code = list(range(int(expand_str_code[0]),
+                                 int(expand_str_code[-1]) + 1))
+    final_codes = [int(e) if e.isdigit() else SUMMED_CODE for e in raw_codes]
+    # Get the column and the weights, sum the weights,
+    # and reorder according to the codebook.
+
+    def shim(df):
+        global TEST_DF
+        TEST_DF = df.copy()
+        return df
+
+    out = (
+        df[[col_key, WTPP_KEY]].copy()
+        .pipe(shim)
+        .assign(
+            **{col_key: lambda df:
+                df[col_key].replace(
+                    to_replace=expand_str_code,
+                    value=SUMMED_CODE)})
+        .groupby(col_key)
+        .sum()
+        [WTPP_KEY]
+        .reindex(final_codes)
+        .reset_index(drop=True)
+        # Weights are many decimal places, so round to match codebook.
+        .round()
+        .astype(int)
+    )
+    # Compare to the weighted frequencies in the codebook.
+    return out.equals(pd.Series(wt_freqs))
+
+
 def define_schema(survey_vars: dict) -> DataFrameSchema:
     """Define a validation schema for the data.
 
@@ -225,11 +349,43 @@ def define_schema(survey_vars: dict) -> DataFrameSchema:
         DataFrameSchema: Pandera schema for the data."""
     # These are the variables that don't have answers
     NON_ANSWER_VARS = [PUMFID_KEY, WTPP_KEY]
+
+    SPECIAL_VARS = [PUMFID_KEY, WTPP_KEY, PROBCNTP_KEY, VERDATE_KEY]
+    probcntp = survey_vars[PROBCNTP_KEY]
+    verdate = survey_vars[VERDATE_KEY]
+    survey_vars_normal = {
+        k: v for k, v in survey_vars.items() if k not in SPECIAL_VARS}
+
+    # Wide data checks to handle the weighted frequencies.
+    wt_freq_checks = []
+    for k in survey_vars_normal:
+        current_var = survey_vars_normal[k]
+        col_kwargs = {'coerce': True}
+        check = Check(
+            validate_wt_freqs, survey_var=current_var, col_key=k)
+        wt_freq_checks.append(check)
+
+    # Add wt_freq checks for VERDATE
+    wt_freq_checks.append(
+        Check(
+            validate_VERDATE_wt_freqs,
+            survey_var=verdate,
+            col_key=VERDATE_KEY)
+    )
+    # Add wt_freq checks for PROBCNTP
+    wt_freq_checks.append(
+        Check(
+            validate_PROBCNTP_wt_freqs,
+            survey_var=probcntp,
+            col_key=PROBCNTP_KEY)
+    )
     # Schema for non answer variables.
-    schema = DataFrameSchema({
-        PUMFID_KEY: Column(int, unique=True, coerce=True),
-        WTPP_KEY: Column(float, coerce=True),
-    })
+    schema = DataFrameSchema(
+        columns={
+            PUMFID_KEY: Column(int, unique=True, coerce=True),
+            WTPP_KEY: Column(float, coerce=True)},
+        checks=wt_freq_checks
+    )
     # All the other answer-containing variables have answer codes.
     # Check these against the codebook extract.
     # For loop through only variables with answer sections.
@@ -272,6 +428,14 @@ def main() -> None:
     schema = define_schema(survey_vars)
     # Validate the data
     schema.validate(raw_df, lazy=True)
+    # try:
+    #     schema.validate(raw_df, lazy=True)
+    # except SchemaErrors as err:
+    #     global failure_cases
+    #     failure_cases = err.failure_cases
+    #     global error_data
+    #     error_data = err.data
+    #     raise err
 
 
 if __name__ == "__main__":
