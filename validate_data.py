@@ -311,15 +311,8 @@ def validate_PROBCNTP_wt_freqs(
     final_codes = [int(e) if e.isdigit() else SUMMED_CODE for e in raw_codes]
     # Get the column and the weights, sum the weights,
     # and reorder according to the codebook.
-
-    def shim(df):
-        global TEST_DF
-        TEST_DF = df.copy()
-        return df
-
     out = (
         df[[col_key, WTPP_KEY]].copy()
-        .pipe(shim)
         .assign(
             **{col_key: lambda df:
                 df[col_key].replace(
