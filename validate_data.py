@@ -340,9 +340,7 @@ def validate_PROBCNTP_wt_freqs(
         assert len(str_code) == 1
     except AssertionError:
         raise ValueError("Expected only one string code in PROBCNTP codes.")
-    expand_str_code = str_code[0].split(" - ")
-    expand_str_code = list(range(int(expand_str_code[0]),
-                                 int(expand_str_code[-1]) + 1))
+    expand_str_code = expand_PROBCNTP_str_code(str_code[0])
     final_codes = [int(e) if e.isdigit() else SUMMED_CODE for e in raw_codes]
     # Get the column and the weights, sum the weights,
     # and reorder according to the codebook.
