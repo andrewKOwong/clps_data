@@ -69,6 +69,9 @@ def read_data(fp: str) -> pd.DataFrame:
 def read_survey_vars(fp: str) -> dict:
     """Read survey variables from JSON file.
 
+    This file is generated from extraction of the CLPS codebook.
+    See: https://github.com/andrewKOwong/clps_survey_vars
+
     Args:
         fp (str): Path to the JSON file.
 
