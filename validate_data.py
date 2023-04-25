@@ -101,6 +101,21 @@ def validate_codes(s: pd.Series, survey_var: dict) -> bool:
     return s.isin(codes)
 
 
+def expand_PROBCNTP_str_code(code: str) -> list[int]:
+    """Helper func to expand PROBCNTP string code to a list of ints.
+
+    Args:
+        code (str): PROBCNTP code to be expanded, i.e. "01 - 16".
+
+    Returns:
+        list[int]: List of ints, i.e. [1, 2, ..., 16].
+    """
+    expanded = code.split(" - ")
+    expanded = list(range(int(expanded[0]),
+                          int(expanded[1]) + 1))
+    return expanded
+
+
 def validate_PROBCNTP_codes(s, survey_var):
     """Helper func to validate PROBCNTP codes.
 
@@ -119,9 +134,7 @@ def validate_PROBCNTP_codes(s, survey_var):
             c = codes.append(int(c))
         except ValueError:
             # Expand '01 - 16' string to list of ints
-            c = c.split(" - ")
-            c = list(range(int(c[0]), int(c[1]) + 1))
-            codes.extend(c)
+            codes.extend(expand_PROBCNTP_str_code(c))
     return s.isin(codes)
 
 
@@ -188,9 +201,7 @@ def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict):
     except AssertionError:
         raise ValueError("Expected only one string code in PROBCNTP codes.")
     # Expand the string code into a list of ints
-    expand_str_code = str_code[0].split(" - ")
-    expand_str_code = list(range(int(expand_str_code[0]),
-                                 int(expand_str_code[1]) + 1))
+    expand_str_code = expand_PROBCNTP_str_code(str_code[0])
 
     # Substitute raw codes to int, except for the summed code
     final_codes = [int(e) if e.isdigit() else SUMMED_CODE for e in raw_codes]
