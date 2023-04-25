@@ -252,7 +252,6 @@ def validate_VERDATE_freqs(s, survey_var):
 
 def validate_wt_freqs(
         df: pd.DataFrame,
-        col_key: str,
         survey_var: dict) -> bool:
     """Wide DataFrame check function to validate weighted frequencies.
 
@@ -264,6 +263,8 @@ def validate_wt_freqs(
 
     Args:
         df (pd.DataFrame): input DataFrame to be validated."""
+    # The column_key of the column to be validated.
+    col_key = survey_var[SVK.VAR_NAME]
     # Ordered codes and weighted frequencies from codebook
     codes = [int(e) for e in survey_var[SVK.CODE]]
     wt_freqs = [int(e) for e in survey_var[SVK.WEIGHTED_FREQUENCY]]
@@ -286,7 +287,6 @@ def validate_wt_freqs(
 
 def validate_VERDATE_wt_freqs(
         df: pd.DataFrame,
-        col_key: str,
         survey_var: dict) -> bool:
     """Wide DataFrame check function to validate VERDATE weighted frequencies.
 
@@ -295,6 +295,8 @@ def validate_VERDATE_wt_freqs(
 
     Args:
         df (pd.DataFrame): input DataFrame to be validated."""
+    # The column_key of the column to be validated.
+    col_key = survey_var[SVK.VAR_NAME]
     # Ordered codes and weighted frequencies from codebook
     codes = survey_var[SVK.CODE]
     wt_freqs = [int(e) for e in survey_var[SVK.WEIGHTED_FREQUENCY]]
@@ -317,7 +319,6 @@ def validate_VERDATE_wt_freqs(
 
 def validate_PROBCNTP_wt_freqs(
         df: pd.DataFrame,
-        col_key: str,
         survey_var: dict) -> bool:
     """Wide DataFrame check function to validate PROBCNTP weighted frequencies.
 
@@ -331,6 +332,8 @@ def validate_PROBCNTP_wt_freqs(
     Returns:
         bool: True if frequencies match, False otherwise."""
     SUMMED_CODE = -1
+    # The column_key of the column to be validated.
+    col_key = survey_var[SVK.VAR_NAME]
     # Ordered codes and weighted frequencies from codebook
     wt_freqs = [int(e) for e in survey_var[SVK.WEIGHTED_FREQUENCY]]
 
@@ -387,22 +390,20 @@ def define_schema(survey_vars: dict) -> DataFrameSchema:
         current_var = survey_vars_normal[k]
         col_kwargs = {'coerce': True}
         check = Check(
-            validate_wt_freqs, survey_var=current_var, col_key=k)
+            validate_wt_freqs, survey_var=current_var)
         wt_freq_checks.append(check)
 
     # Add wt_freq checks for VERDATE
     wt_freq_checks.append(
         Check(
             validate_VERDATE_wt_freqs,
-            survey_var=verdate,
-            col_key=VERDATE_KEY)
+            survey_var=verdate)
     )
     # Add wt_freq checks for PROBCNTP
     wt_freq_checks.append(
         Check(
             validate_PROBCNTP_wt_freqs,
-            survey_var=probcntp,
-            col_key=PROBCNTP_KEY)
+            survey_var=probcntp)
     )
     # Schema for non answer variables.
     schema = DataFrameSchema(
