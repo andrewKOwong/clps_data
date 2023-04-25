@@ -141,6 +141,8 @@ def validate_VERDATE_codes(s, survey_var):
 def validate_freqs(s: pd.Series, survey_var: dict) -> bool:
     """Helper func to validate frequencies against the codebook.
 
+    To be used as a Pandera Column Check function.
+
     Args:
         s (pd.Series): Column to be validated.
         survey_var (dict): Dictionary of a single survey variable.
