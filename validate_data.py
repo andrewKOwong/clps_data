@@ -6,7 +6,7 @@ from pandera import Column, DataFrameSchema, Check
 # from pandera.errors import SchemaErrors
 from clps.constants import survey_vars_keys as SVK
 
-
+# Command line argument keys
 INPUT_FP_KEY = "input_fp"
 SURVEY_VARS_FP_KEY = "survey_vars_fp"
 # Respondents id
@@ -25,17 +25,21 @@ def get_args() -> dict:
     """Parse command line arguments and return as dict."""
     # Set up parser
     parser = argparse.ArgumentParser(
-        description="Validate CLPS data."
+        description="Script for validating CLPS data. Invalid checks will"
+        " raise Pandera SchemaErrors. Consider piping error output to file"
+        "for easier inspection, "
+        "e.g. `python validate_data.py 2> validate_test_err.txt`."
     )
     parser.add_argument(
         "-i", "--input_fp",
-        help="Path to the input data CSV file.",
+        help="Path to the input data CSV file. Defaults to `data/clps.csv`.",
         default="data/clps.csv",
         dest=INPUT_FP_KEY
     )
     parser.add_argument(
         "-s", "--survey_vars_fp",
-        help="Path to the survey variables JSON file.",
+        help="Path to the survey variables JSON file."
+             " Defaults to `data/survey_vars.json`.",
         default="data/survey_vars.json",
         dest=SURVEY_VARS_FP_KEY
     )
