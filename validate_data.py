@@ -128,6 +128,7 @@ def validate_PROBCNTP_codes(s, survey_var):
 def validate_VERDATE_codes(s, survey_var):
     """Helper func to validate VERDATE codes.
 
+    To be used as a Pandera Column Check function.
     This is a special case, as VERDATE only has a date string for its code.
 
     Args:
