@@ -104,6 +104,7 @@ def validate_codes(s: pd.Series, survey_var: dict) -> bool:
 def validate_PROBCNTP_codes(s, survey_var):
     """Helper func to validate PROBCNTP codes.
 
+    To be used as a Pandera Column Check function.
     This is a special case, as the codebook entry collapses codes 01 - 16
     to a single '01 - 16' text string.
 
