@@ -188,34 +188,42 @@ def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict):
 
     Returns:
         bool: True if frequencies match, False otherwise."""
+    # The strategy here is to take all the codes that fall under the range
+    # 01 - 16, and sum their frequencies. Then, compare the sum to the
+    # frequency of the '01 - 16' code.
+
+    # A placeholder indexer for the summed frequencies.
     SUMMED_CODE = -1
     # Get frequencies
     freqs = [int(e) for e in survey_var[SVK.FREQUENCY]]
-
+    # Get the raw codes, and split into intable codes and the string code
     raw_codes = survey_var[SVK.CODE]
     int_codes = [int(e) for e in raw_codes if e.isdigit()]
-    # str_code refers to the '01 - 16' code
     str_code = [e for e in raw_codes if not e.isdigit()]
+    # Check that there should only be one string code.
     try:
         assert len(str_code) == 1
     except AssertionError:
         raise ValueError("Expected only one string code in PROBCNTP codes.")
     # Expand the string code into a list of ints
     expand_str_code = expand_PROBCNTP_str_code(str_code[0])
-
-    # Substitute raw codes to int, except for the summed code
+    # Final codes are what the indexes of the final pandas series will be.
+    # Convert int-able raw codes, otherwise use the summed code placeholder
     final_codes = [int(e) if e.isdigit() else SUMMED_CODE for e in raw_codes]
-    # Get the value counts of the PROBCNTP column and split it into the
-    # intable codes and the string code, sum up the that belong with
-    # the string code, the concatenate into a final series, before
-    # reordering.
+    # Now work with the actual data column.
     s = s.value_counts()
+    # Split the data into int-able codes and the codes that fall under the
+    # string code range.
     int_s = s[s.index.isin(int_codes)]
     str_s = s[s.index.isin(expand_str_code)]
+    # Sum the string code frequencies and reindex them with the placeholder
+    # indexer.
     str_s = pd.Series([str_s.sum()], index=[SUMMED_CODE])
+    # Put everything back together, reindex into the original order of the
+    # codebook..
     final_s = pd.concat([int_s, str_s])
     final_s = final_s.reindex(final_codes)
-    # Drop the indexes now that the order is correct
+    # Drop the indexes now that the order is correct, and compare.
     final_s = final_s.reset_index(drop=True)
     return final_s.equals(pd.Series(freqs))
 
