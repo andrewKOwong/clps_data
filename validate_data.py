@@ -348,9 +348,8 @@ def validate_PROBCNTP_wt_freqs(
         df[[col_key, WTPP_KEY]].copy()
         .assign(
             **{col_key: lambda df:
-                df[col_key].replace(
-                    to_replace=expand_str_code,
-                    value=SUMMED_CODE)})
+                df[col_key].replace(to_replace=expand_str_code,
+                                    value=SUMMED_CODE)})
         .groupby(col_key)
         .sum()
         [WTPP_KEY]
