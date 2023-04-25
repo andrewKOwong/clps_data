@@ -90,8 +90,10 @@ def read_survey_vars(fp: str) -> dict:
 def validate_codes(s: pd.Series, survey_var: dict) -> bool:
     """Helper func to validate codes against the codebook.
 
+    To be used as a Pandera Column Check function.
+
     Args:
-        s (pd.Series): Column to be validated. Must be intable columbn.
+        s (pd.Series): Column to be validated. Must be int-able columbn.
         survey_var (dict): Dictionary of a single survey variable.
     """
     # Codebook extract are strings (e.g. "01"), so convert to int
