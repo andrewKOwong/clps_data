@@ -164,6 +164,8 @@ def validate_freqs(s: pd.Series, survey_var: dict) -> bool:
 def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict):
     """Helper func to validate PROBCNTP frequencies.
 
+
+    To be used as a Pandera Column Check function.
     This is a special case, as the codebook entry collapses codes 01 - 16
     to a single '01 - 16' text string.
 
@@ -210,6 +212,7 @@ def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict):
 def validate_VERDATE_freqs(s, survey_var):
     """Helper func to validate VERDATE frequencies.
 
+    To be used as a Pandera Column Check function.
     This is a special case, as VERDATE only has a date string for its code.
 
     Args:
