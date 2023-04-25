@@ -454,14 +454,6 @@ def main() -> None:
     schema = define_schema(survey_vars)
     # Validate the data
     schema.validate(raw_df, lazy=True)
-    # try:
-    #     schema.validate(raw_df, lazy=True)
-    # except SchemaErrors as err:
-    #     global failure_cases
-    #     failure_cases = err.failure_cases
-    #     global error_data
-    #     error_data = err.data
-    #     raise err
 
 
 if __name__ == "__main__":
