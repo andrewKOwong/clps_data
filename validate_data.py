@@ -95,6 +95,9 @@ def validate_codes(s: pd.Series, survey_var: dict) -> bool:
     Args:
         s (pd.Series): Column to be validated. Must be int-able columbn.
         survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if codes match, False otherwise.
     """
     # Codebook extract are strings (e.g. "01"), so convert to int
     codes = [int(e) for e in survey_var[SVK.CODE]]
@@ -116,7 +119,7 @@ def expand_PROBCNTP_str_code(code: str) -> list[int]:
     return expanded
 
 
-def validate_PROBCNTP_codes(s, survey_var):
+def validate_PROBCNTP_codes(s: pd.Series, survey_var: dict) -> bool:
     """Helper func to validate PROBCNTP codes.
 
     To be used as a Pandera Column Check function.
@@ -126,6 +129,9 @@ def validate_PROBCNTP_codes(s, survey_var):
     Args:
         s (pd.Series): Column to be validated.
         survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if codes match, False otherwise.
     """
     codes = []
     for c in survey_var[SVK.CODE]:
@@ -138,7 +144,7 @@ def validate_PROBCNTP_codes(s, survey_var):
     return s.isin(codes)
 
 
-def validate_VERDATE_codes(s, survey_var):
+def validate_VERDATE_codes(s: pd.Series, survey_var: dict) -> bool:
     """Helper func to validate VERDATE codes.
 
     To be used as a Pandera Column Check function.
@@ -146,7 +152,11 @@ def validate_VERDATE_codes(s, survey_var):
 
     Args:
         s (pd.Series): Column to be validated.
-        survey_var (dict): Dictionary of a single survey variable."""
+        survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if codes match, False otherwise.
+    """
     codes = survey_var[SVK.CODE]
     return s.isin(codes)
 
@@ -174,7 +184,7 @@ def validate_freqs(s: pd.Series, survey_var: dict) -> bool:
     return s.equals(pd.Series(freqs))
 
 
-def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict):
+def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict) -> bool:
     """Helper func to validate PROBCNTP frequencies.
 
 
@@ -228,7 +238,7 @@ def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict):
     return final_s.equals(pd.Series(freqs))
 
 
-def validate_VERDATE_freqs(s, survey_var):
+def validate_VERDATE_freqs(s: pd.Series, survey_var: dict) -> bool:
     """Helper func to validate VERDATE frequencies.
 
     To be used as a Pandera Column Check function.
@@ -250,9 +260,7 @@ def validate_VERDATE_freqs(s, survey_var):
     return s.equals(pd.Series(freqs))
 
 
-def validate_wt_freqs(
-        df: pd.DataFrame,
-        survey_var: dict) -> bool:
+def validate_wt_freqs(df: pd.DataFrame, survey_var: dict) -> bool:
     """Wide DataFrame check function to validate weighted frequencies.
 
     This is meant to be used for checks that operate on the entire dataframe,
@@ -262,7 +270,11 @@ def validate_wt_freqs(
     sum of the weights grouped by answer codes.)
 
     Args:
-        df (pd.DataFrame): input DataFrame to be validated."""
+        df (pd.DataFrame): input DataFrame to be validated.
+        survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if frequencies match, False otherwise."""
     # The column_key of the column to be validated.
     col_key = survey_var[SVK.VAR_NAME]
     # Ordered codes and weighted frequencies from codebook
@@ -285,16 +297,18 @@ def validate_wt_freqs(
     return out.equals(pd.Series(wt_freqs))
 
 
-def validate_VERDATE_wt_freqs(
-        df: pd.DataFrame,
-        survey_var: dict) -> bool:
+def validate_VERDATE_wt_freqs(df: pd.DataFrame, survey_var: dict) -> bool:
     """Wide DataFrame check function to validate VERDATE weighted frequencies.
 
     This is basically the same as validate_wt_freqs, but without inting the
     codes, as VERDATE only has a date string for its code.
 
     Args:
-        df (pd.DataFrame): input DataFrame to be validated."""
+        df (pd.DataFrame): input DataFrame to be validated.
+        survey_var (dict): Dictionary of a single survey variable.
+
+    Returns:
+        bool: True if frequencies match, False otherwise."""
     # The column_key of the column to be validated.
     col_key = survey_var[SVK.VAR_NAME]
     # Ordered codes and weighted frequencies from codebook
@@ -317,9 +331,7 @@ def validate_VERDATE_wt_freqs(
     return out.equals(pd.Series(wt_freqs))
 
 
-def validate_PROBCNTP_wt_freqs(
-        df: pd.DataFrame,
-        survey_var: dict) -> bool:
+def validate_PROBCNTP_wt_freqs(df: pd.DataFrame, survey_var: dict) -> bool:
     """Wide DataFrame check function to validate PROBCNTP weighted frequencies.
 
     This is a special case, as the codebook entry collapses codes 01 - 16
