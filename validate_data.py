@@ -88,7 +88,7 @@ def read_survey_vars(fp: str) -> dict:
 
 
 def validate_codes(s: pd.Series, survey_var: dict) -> bool:
-    """Helper func to validate codes against the codebook.
+    """Check func to validate codes against the codebook.
 
     To be used as a Pandera Column Check function.
 
@@ -120,7 +120,7 @@ def expand_PROBCNTP_str_code(code: str) -> list[int]:
 
 
 def validate_PROBCNTP_codes(s: pd.Series, survey_var: dict) -> bool:
-    """Helper func to validate PROBCNTP codes.
+    """Check func to validate PROBCNTP codes.
 
     To be used as a Pandera Column Check function.
     This is a special case, as the codebook entry collapses codes 01 - 16
@@ -145,7 +145,7 @@ def validate_PROBCNTP_codes(s: pd.Series, survey_var: dict) -> bool:
 
 
 def validate_VERDATE_codes(s: pd.Series, survey_var: dict) -> bool:
-    """Helper func to validate VERDATE codes.
+    """Check func to validate VERDATE codes.
 
     To be used as a Pandera Column Check function.
     This is a special case, as VERDATE only has a date string for its code.
@@ -162,7 +162,7 @@ def validate_VERDATE_codes(s: pd.Series, survey_var: dict) -> bool:
 
 
 def validate_freqs(s: pd.Series, survey_var: dict) -> bool:
-    """Helper func to validate frequencies against the codebook.
+    """Check func to validate frequencies against the codebook.
 
     To be used as a Pandera Column Check function.
 
@@ -185,7 +185,7 @@ def validate_freqs(s: pd.Series, survey_var: dict) -> bool:
 
 
 def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict) -> bool:
-    """Helper func to validate PROBCNTP frequencies.
+    """Check func to validate PROBCNTP frequencies.
 
 
     To be used as a Pandera Column Check function.
@@ -239,7 +239,7 @@ def validate_PROBCNTP_freqs(s: pd.Series, survey_var: dict) -> bool:
 
 
 def validate_VERDATE_freqs(s: pd.Series, survey_var: dict) -> bool:
-    """Helper func to validate VERDATE frequencies.
+    """Check func to validate VERDATE frequencies.
 
     To be used as a Pandera Column Check function.
     This is a special case, as VERDATE only has a date string for its code.
