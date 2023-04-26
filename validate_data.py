@@ -250,6 +250,7 @@ def validate_VERDATE_freqs(s: pd.Series, survey_var: dict) -> bool:
 
     Returns:
         bool: True if frequencies match, False otherwise."""
+    # Get codebook frequencies
     freqs = [int(e) for e in survey_var[SVK.FREQUENCY]]
     # Get value counts of the column, and reorder according to their order
     # in the codebook.
@@ -343,6 +344,7 @@ def validate_PROBCNTP_wt_freqs(df: pd.DataFrame, survey_var: dict) -> bool:
 
     Returns:
         bool: True if frequencies match, False otherwise."""
+    # A placeholder indexer for the summed frequencies.
     SUMMED_CODE = -1
     # The column_key of the column to be validated.
     col_key = survey_var[SVK.VAR_NAME]
