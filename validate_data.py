@@ -383,28 +383,47 @@ def validate_PROBCNTP_wt_freqs(df: pd.DataFrame, survey_var: dict) -> bool:
 def define_schema(survey_vars: dict) -> DataFrameSchema:
     """Define a validation schema for the data.
 
+    The following checks are performed:
+    1) PUMFID -> every row is unique.
+    2) Unique values of every survey variable with answers matches the answer
+       codes in the codebook. This excludes PUMFID and WTPP.
+    3) Frequencies and weighted frequencies match the codebook.
+    4) There are no null values.
+
     Args:
         survey_vars (dict): Dictionary of survey variables, keyed to each
             survey variable name.
 
     Returns:
         DataFrameSchema: Pandera schema for the data."""
-    # These are the variables that don't have answers
-    NON_ANSWER_VARS = [PUMFID_KEY, WTPP_KEY]
+    # Strategy:
+    # For each survey variable (excluding special cases), code values and
+    # frequency values are handled via Pandera column checks. Weighted
+    # frequencies are handled via Pandera wide format DataFrame checks, as it
+    # summing the WTPP column weights after grouping by the column of interest.
+    # PUMFID and WTPP are handled by their own column checks, as they don't
+    # have answer categories.
+    # PROBCNTP is handled by its own checks, as it contains a summary code of
+    # "01 - 16" that needs to be expanded to the individual codes.
+    # VERDATE is handled separately, as it only contains a single str code for
+    # the date.
+    # Note, by default pandera disallows null values, which matches
+    # the assumption that this dataset should not have null values.
 
+    # These variables have to be handled separately.
     SPECIAL_VARS = [PUMFID_KEY, WTPP_KEY, PROBCNTP_KEY, VERDATE_KEY]
     probcntp = survey_vars[PROBCNTP_KEY]
     verdate = survey_vars[VERDATE_KEY]
+
+    # The remaining regular variables
     survey_vars_normal = {
         k: v for k, v in survey_vars.items() if k not in SPECIAL_VARS}
 
     # Wide data checks to handle the weighted frequencies.
     wt_freq_checks = []
     for k in survey_vars_normal:
-        current_var = survey_vars_normal[k]
-        col_kwargs = {'coerce': True}
         check = Check(
-            validate_wt_freqs, survey_var=current_var)
+            validate_wt_freqs, survey_var=survey_vars_normal[k])
         wt_freq_checks.append(check)
 
     # Add wt_freq checks for VERDATE
@@ -429,29 +448,25 @@ def define_schema(survey_vars: dict) -> DataFrameSchema:
     # All the other answer-containing variables have answer codes.
     # Check these against the codebook extract.
     # For loop through only variables with answer sections.
-    for k in [k for k in survey_vars.keys() if k not in NON_ANSWER_VARS]:
-        current_var = survey_vars[k]
-        col_kwargs = {'coerce': True}
-        if k == VERDATE_KEY:
-            # This is a special case, as the codebook entry is a date string
-            col_kwargs['dtype'] = str
-            col_kwargs['checks'] = [
-                Check(validate_VERDATE_codes, survey_var=current_var),
-                Check(validate_VERDATE_freqs, survey_var=current_var)]
-        elif k == PROBCNTP_KEY:
-            col_kwargs['dtype'] = int
-            col_kwargs['checks'] = [
-                Check(validate_PROBCNTP_codes, survey_var=current_var),
-                Check(validate_PROBCNTP_freqs, survey_var=current_var)]
-        else:
-            col_kwargs['dtype'] = int
-            col_kwargs['checks'] = [
-                Check(validate_codes, survey_var=current_var),
-                Check(validate_freqs, survey_var=current_var)]
+    for k in survey_vars_normal:
         # Update the schema
-        schema = schema.add_columns({k: Column(**col_kwargs)})
-    # Note, by default pandera disallows null values, which matches
-    # the assumption that this dataset should not have null values.
+        schema = schema.add_columns(
+            {k:
+                Column(dtype=int, coerce=True, checks=[
+                    Check(validate_codes, survey_var=survey_vars[k]),
+                    Check(validate_freqs, survey_var=survey_vars[k])])})
+
+    # Add the VERDATE and PROBCNTP special variables as column checks.
+    schema = schema.add_columns(
+        {VERDATE_KEY:
+            Column(dtype=str, coerce=True, checks=[
+                Check(validate_VERDATE_codes, survey_var=verdate),
+                Check(validate_VERDATE_freqs, survey_var=verdate)])})
+    schema = schema.add_columns(
+        {PROBCNTP_KEY:
+            Column(dtype=int, coerce=True, checks=[
+                Check(validate_PROBCNTP_codes, survey_var=probcntp),
+                Check(validate_PROBCNTP_freqs, survey_var=probcntp)])})
     return schema
 
 
