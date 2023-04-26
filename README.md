@@ -12,7 +12,7 @@ basic assumptions about the data:
 To run the data validation script,
  run the following command in the top directory:
 
-```python
+```bash
 python validate_data.py 2> validate_test_err.txt
 ```
 Piping the `stderr` stream to a file is optional, but convenient for inspecting
