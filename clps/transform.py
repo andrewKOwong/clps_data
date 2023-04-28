@@ -41,8 +41,13 @@ def prepare_plotable_df(
     # Filter by variable
     df = filter_by_variable(df, [var_to_plot, WEIGHT_KEY])
 
-    # Count frequency
-    df = df[var_to_plot].value_counts().rename(unweighted_index_name)
+    # Count weighted/unweighted frequency
+    if plot_weighted:
+        df = df.groupby(var_to_plot)[WEIGHT_KEY].sum().rename(weighted_index_name)
+        df = df.round()
+    else:
+        df = df[var_to_plot].value_counts().rename(unweighted_index_name)
+
 
     # Reorder by the original codes
     df = df.reindex(sv.codes)
