@@ -23,6 +23,8 @@ VAR_OF_INTEREST = 'PRIP10H'
 
 VALID_SKIP = 'Valid skip'
 
+GROUPBY_VARS = {AGE_KEY: 'Age', GENDER_KEY: 'Gender'}
+
 
 def create_sidebar():
     st.sidebar.title('CLPS Data Explorer')
@@ -57,8 +59,10 @@ def select_region(keyed_survey_vars: dict):
 
 
 def select_groupby_var() -> str:
-    GROUPBY_DICT = {'Age': AGE_KEY, 'Gender': GENDER_KEY}
-    return GROUPBY_DICT[st.selectbox('Groupby:', GROUPBY_DICT.keys())]
+    return st.selectbox(
+        label='Groupby:',
+        options=GROUPBY_VARS.keys(),
+        format_func=lambda k: GROUPBY_VARS[k])
 
 
 def remove_valid_skips(df: pd.DataFrame) -> pd.DataFrame:
@@ -112,21 +116,19 @@ def main():
         df = df.query(f"{selected_var} != 6")
 
     if not plot_weighted:
-        chart = alt.Chart(df).mark_bar().encode(
-            x=f"{selected_var}:N",
-            y=f'count({selected_var})',
-            color=f"{groupby_var}:O"
-        )
+        y = f"count({selected_var})"
     else:
-        chart = alt.Chart(df).mark_bar().encode(
-            x=f"{selected_var}:N",
-            y='sum(WTPP)',
-            color=f"{groupby_var}:O"
-        )
+        y = 'sum(WTPP)'
+
+    chart = alt.Chart(df).mark_bar().encode(
+        x=f"{selected_var}:N",
+        y=y,
+        color=alt.Color(
+            f"{groupby_var}:O", title=GROUPBY_VARS[groupby_var])
+    )
 
     st.altair_chart(chart, use_container_width=True)
 
-    # TODO remove legend title
     # TODO X and Y axis titles
     # TODO dealing with when region is in or not
     # TODO compress data
