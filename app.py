@@ -113,7 +113,7 @@ def main():
     })
 
     if remove_valid_skips:
-        df = df.query(f"{selected_var} != 6")
+        df = df.query(f"{selected_var} != '{VALID_SKIP}'")
 
     if not plot_weighted:
         y = alt.Y(f"count({selected_var})", title='Count')
@@ -130,7 +130,6 @@ def main():
 
     st.altair_chart(chart, use_container_width=True)
 
-    # TODO X and Y axis titles
     # TODO FIX valid skips
     # TODO dealing with when region is in or not
     # TODO compress data
