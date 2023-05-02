@@ -14,13 +14,14 @@ DATA_FOLDER = Path('data')
 CLPS_DATA_FP = DATA_FOLDER / 'clps.csv'
 SURVEY_VARS_FP = DATA_FOLDER / 'survey_vars.json'
 
-
-COLS_TO_KEEP = ['PUMFID', 'AGEGRP', 'REGION', 'GDRP10', 'WTPP', 'PRIP10H']
-
+ID_KEY = 'PUMFID'
+AGE_KEY = 'AGEGRP'
+REGION_KEY = 'REGION'
+GENDER_KEY = 'GDRP10'
+WEIGHT_KEY = 'WTPP'
 VAR_OF_INTEREST = 'PRIP10H'
-VALID_SKIP = 'Valid skip'
 
-GROUPBY_DICT = {'Age': 'AGEGRP', 'Gender': 'GDRP10'}
+VALID_SKIP = 'Valid skip'
 
 
 def create_sidebar():
@@ -30,23 +31,53 @@ def create_sidebar():
     ''')
 
 
-def create_groupby():
+def select_var(
+        raw_df: pd.DataFrame,
+        keyed_survey_vars: dict,
+        exclude: list = None) -> str:
+    selectable = raw_df.columns[~raw_df.columns.isin(exclude)]
+    return st.selectbox(
+        label='Variable',
+        options=selectable,
+        format_func=lambda k: f"{k} - {keyed_survey_vars[k][SVK.CONCEPT]}"
+    )
+
+
+def select_region():
+    return st.selectbox('Region', ['National', 1, 2, 3, 4, 5])
+
+
+def select_groupby_var() -> str:
+    GROUPBY_DICT = {'Age': AGE_KEY, 'Gender': GENDER_KEY}
     return GROUPBY_DICT[st.selectbox('Groupby:', GROUPBY_DICT.keys())]
+
+
+@st.cache_data
+def load_data():
+    return pd.read_csv(CLPS_DATA_FP)
+
+
+@st.cache_data
+def load_survey_vars():
+    return svu.load_keyed_survey_vars(SURVEY_VARS_FP)
 
 
 def main():
     create_sidebar()
-    # Choose a variable for display
-    selected_var = st.selectbox('Variable Name', [VAR_OF_INTEREST, 'RURURBP'])
+    df = load_data()
+    svs = load_survey_vars()
 
-    region = st.selectbox('Region', ['National', 1, 2, 3, 4, 5])
-    groupby_var = create_groupby()
+    non_selectable = [ID_KEY, AGE_KEY, GENDER_KEY, REGION_KEY, WEIGHT_KEY]
+    # Load data
+    # Choose a variable for display
+    selected_var = select_var(df, svs, non_selectable)
+
+    region = select_region()
+    groupby_var = select_groupby_var()
 
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
     remove_valid_skips = st.checkbox('Remove valid skips', value=True)
-
-    df = pd.read_csv(CLPS_DATA_FP)
 
     if region != 'National':
         df = tfm.filter_by_region(df, region)
@@ -71,7 +102,12 @@ def main():
 
     st.altair_chart(chart, use_container_width=True)
 
-    # Add note about saving as SVG/PNG
+    # TODO tidying of the names
+    # TODO dealing with when region is in or not
+    # TODO show Analise first.
+    # TODO consider testing
+    # TODO Add note about saving as SVG/PNG
+    # TODO Deal with PROBCNTP
 
 
 if __name__ == '__main__':
