@@ -116,12 +116,13 @@ def main():
         df = df.query(f"{selected_var} != 6")
 
     if not plot_weighted:
-        y = f"count({selected_var})"
+        y = alt.Y(f"count({selected_var})", title='Count')
     else:
-        y = 'sum(WTPP)'
+        y = alt.Y(f'sum({WEIGHT_KEY})', title='Weighted Count')
 
     chart = alt.Chart(df).mark_bar().encode(
-        x=f"{selected_var}:N",
+        x=alt.X(f"{selected_var}:N",
+                title=f"{selected_var} - {svs[selected_var][SVK.CONCEPT]}"),
         y=y,
         color=alt.Color(
             f"{groupby_var}:O", title=GROUPBY_VARS[groupby_var])
@@ -130,12 +131,14 @@ def main():
     st.altair_chart(chart, use_container_width=True)
 
     # TODO X and Y axis titles
+    # TODO FIX valid skips
     # TODO dealing with when region is in or not
     # TODO compress data
     # TODO tool tips and such
     # TODO add metric to display low count warning.
     # TODO Handle PROBCNTP and VERDATE
     # TODO Intro stuff
+    # TODO Chart scaling
     # TODO show Analise first.
     # TODO consider testing
     # TODO Add note about saving as SVG/PNG
