@@ -61,6 +61,10 @@ def select_groupby_var() -> str:
     return GROUPBY_DICT[st.selectbox('Groupby:', GROUPBY_DICT.keys())]
 
 
+def remove_valid_skips(df: pd.DataFrame) -> pd.DataFrame:
+    return df[df[VAR_OF_INTEREST] != VALID_SKIP]
+
+
 @st.cache_data
 def load_data():
     return pd.read_csv(CLPS_DATA_FP)
@@ -80,18 +84,29 @@ def main():
     # Load data
     # Choose a variable for display
     selected_var = select_var(df, svs, non_selectable)
-
+    # Choose region to filter
     region = select_region(svs)
+    # Choose variable for bar chart groupings
     groupby_var = select_groupby_var()
 
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
     remove_valid_skips = st.checkbox('Remove valid skips', value=True)
 
+    # Region filtering
     if region is not None:
         df = tfm.filter_by_region(df, region)
+    # Groupby filtering
+    df = df[[selected_var, groupby_var, WEIGHT_KEY]]
 
-    df = df[[selected_var, groupby_var, 'WTPP']]
+    # Change ints to text
+    df = df.assign(**{
+        selected_var: lambda d: d[selected_var].map(
+            svu.SurveyVar(svs[selected_var]).get_answer
+        ),
+        groupby_var: lambda d: d[groupby_var].map(
+            svu.SurveyVar(svs[groupby_var]).get_answer)
+    })
 
     if remove_valid_skips:
         df = df.query(f"{selected_var} != 6")
@@ -111,10 +126,14 @@ def main():
 
     st.altair_chart(chart, use_container_width=True)
 
-    # TODO tidying of the names
+    # TODO remove legend title
+    # TODO X and Y axis titles
     # TODO dealing with when region is in or not
     # TODO compress data
     # TODO tool tips and such
+    # TODO add metric to display low count warning.
+    # TODO Handle PROBCNTP and VERDATE
+    # TODO Intro stuff
     # TODO show Analise first.
     # TODO consider testing
     # TODO Add note about saving as SVG/PNG
