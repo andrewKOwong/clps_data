@@ -36,7 +36,6 @@ def prepare_plotable_df(
     # Filter by region
     if region_filter is not None:
         df = filter_by_region(df, region_filter)
-    weights = df[WEIGHT_KEY]
 
     # Filter by variable
     df = filter_by_variable(df, [var_to_plot, WEIGHT_KEY])
@@ -56,6 +55,6 @@ def prepare_plotable_df(
 
     # Remove valid skip answers
     if remove_valid_skips:
-        df = df.drop(index=VALID_SKIP)
+        df = df.drop(index=VALID_SKIP, errors='ignore')
 
     return df
