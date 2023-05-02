@@ -43,8 +43,17 @@ def select_var(
     )
 
 
-def select_region():
-    return st.selectbox('Region', ['National', 1, 2, 3, 4, 5])
+def select_region(keyed_survey_vars: dict):
+    NATIONAL = 'National'
+    regions = svu.SurveyVar(keyed_survey_vars[REGION_KEY])
+    opts = [None] + regions.codes
+    return st.selectbox(
+        label='Region',
+        options=opts,
+        format_func=lambda e:
+            NATIONAL if e is None else
+            regions.get_answer(e)
+    )
 
 
 def select_groupby_var() -> str:
@@ -72,14 +81,14 @@ def main():
     # Choose a variable for display
     selected_var = select_var(df, svs, non_selectable)
 
-    region = select_region()
+    region = select_region(svs)
     groupby_var = select_groupby_var()
 
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
     remove_valid_skips = st.checkbox('Remove valid skips', value=True)
 
-    if region != 'National':
+    if region is not None:
         df = tfm.filter_by_region(df, region)
 
     df = df[[selected_var, groupby_var, 'WTPP']]
@@ -104,6 +113,8 @@ def main():
 
     # TODO tidying of the names
     # TODO dealing with when region is in or not
+    # TODO compress data
+    # TODO tool tips and such
     # TODO show Analise first.
     # TODO consider testing
     # TODO Add note about saving as SVG/PNG
