@@ -29,6 +29,8 @@ GROUPBY_VARS = {AGE_KEY: 'Age', GENDER_KEY: 'Gender'}
 
 LABEL_SPLIT = '----'
 
+SAVE_HINT = 'To save the chart, click on dots in the upper-right corner.'
+
 
 def create_sidebar():
     st.sidebar.title('CLPS Data Explorer')
@@ -90,7 +92,10 @@ def load_survey_vars():
     return svu.load_keyed_survey_vars(SURVEY_VARS_FP)
 
 
-def main():
+def main(debug=False, log_file_path: str | None = None):
+    if debug and log_file_path is None:
+        raise ValueError('Must provide log file path if debug is True.')
+
     create_sidebar()
     df = load_data()
     svs = load_survey_vars()
@@ -163,6 +168,10 @@ def main():
 
     st.altair_chart(chart, use_container_width=True)
 
+    st.markdown(SAVE_HINT)
+
+    # TODO Color order is wrong?!?!
+    # TODO Add note about saving as SVG/PNG
     # TODO dealing with when region is in or not
     # TODO tool tips and such
     # TODO add metric to display low count warning.
@@ -171,11 +180,18 @@ def main():
     # TODO Chart scaling
     # TODO show Analise first.
     # TODO consider testing
-    # TODO Add note about saving as SVG/PNG
     # TODO Deal with PROBCNTP
     # TODO add loading indicator for data processing
     # TODO Add no groupby option
 
 
 if __name__ == '__main__':
-    main()
+    # Run as a regular python script for debug options
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--log_file', default='clps_data_explorer.log')
+    args = parser.parse_args()
+    debug = args.debug
+    log_file_path = args.log_file
+    main(debug=debug, log_file_path=log_file_path)
