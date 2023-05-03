@@ -13,6 +13,7 @@ reload(tfm)
 
 DATA_FOLDER = Path('data')
 CLPS_DATA_FP = DATA_FOLDER / 'clps.csv'
+CLPS_COMPRESSED_FP = DATA_FOLDER / 'clps.zip'
 SURVEY_VARS_FP = DATA_FOLDER / 'survey_vars.json'
 
 ID_KEY = 'PUMFID'
@@ -72,7 +73,7 @@ def remove_valid_skips(df: pd.DataFrame) -> pd.DataFrame:
 
 @st.cache_data
 def load_data():
-    return pd.read_csv(CLPS_DATA_FP)
+    return pd.read_csv(CLPS_COMPRESSED_FP)
 
 
 @st.cache_data
