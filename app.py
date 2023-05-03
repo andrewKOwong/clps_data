@@ -172,6 +172,12 @@ def main(debug=False, log_file_path: str | None = None):
 
     st.markdown(SAVE_HINT)
 
+    if debug:
+        import logging
+        logging.basicConfig(filename=log_file_path, level=logging.DEBUG)
+        alt.data_transformers.disable_max_rows()
+        logging.debug(chart.to_json())
+
     # TODO Color order is wrong?!?!
     # TODO Add no groupby option
     # TODO dealing with when region is in or not
