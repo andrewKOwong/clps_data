@@ -1,5 +1,6 @@
 import pandas as pd
 from pathlib import Path
+from textwrap import wrap
 import streamlit as st
 import altair as alt
 from clps.constants import survey_vars_keys as SVK
@@ -103,10 +104,10 @@ def main():
     # Groupby filtering
     df = df[[selected_var, groupby_var, WEIGHT_KEY]]
 
-    # Change ints to text
+    # Change ints to text, also use label wrapping
     df = df.assign(**{
         selected_var: lambda d: d[selected_var].map(
-            svu.SurveyVar(svs[selected_var]).get_answer
+            lambda e: svu.SurveyVar(svs[selected_var]).get_answer(e)
         ),
         groupby_var: lambda d: d[groupby_var].map(
             svu.SurveyVar(svs[groupby_var]).get_answer)
@@ -115,14 +116,25 @@ def main():
     if remove_valid_skips:
         df = df.query(f"{selected_var} != '{VALID_SKIP}'")
 
+    df = df.assign(**{
+        selected_var: lambda d: d[selected_var].apply(
+            lambda e: '---'.join(wrap(e, 20)))
+    })
+
     if not plot_weighted:
         y = alt.Y(f"count({selected_var})", title='Count')
     else:
         y = alt.Y(f'sum({WEIGHT_KEY})', title='Weighted Count')
 
-    chart = alt.Chart(df).mark_bar().encode(
-        x=alt.X(f"{selected_var}:N",
-                title=f"{selected_var} - {svs[selected_var][SVK.CONCEPT]}"),
+    x = alt.X(f"{selected_var}:N",
+              title=f"{selected_var} - {svs[selected_var][SVK.CONCEPT]}",
+              axis=alt.Axis(labelLimit=1000,
+                            labelAngle=-45,
+                            labelExpr="split(datum.label, '---')"))
+
+    chart = alt.Chart(df).mark_bar()
+    chart = chart.encode(
+        x=x,
         y=y,
         color=alt.Color(
             f"{groupby_var}:O", title=GROUPBY_VARS[groupby_var])
@@ -130,7 +142,9 @@ def main():
 
     st.altair_chart(chart, use_container_width=True)
 
-    # TODO FIX valid skips
+    # TODO wrap long labels e.g. EDUFLAGP
+    # TODO fix order of labels
+    # TODO try out axis flips
     # TODO dealing with when region is in or not
     # TODO compress data
     # TODO tool tips and such
