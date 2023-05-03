@@ -156,6 +156,8 @@ def main(debug=False, log_file_path: str | None = None):
                             labelAngle=-45,
                             labelExpr=f"split(datum.label, '{LABEL_SPLIT}')"))
 
+    groupby_order = list(df[groupby_var].cat.categories)
+
     chart = alt.Chart(df).mark_bar()
     chart = chart.encode(
         x=x,
@@ -163,7 +165,7 @@ def main(debug=False, log_file_path: str | None = None):
         color=alt.Color(
             f"{groupby_var}:O",
             title=GROUPBY_VARS[groupby_var],
-            sort=list(df[groupby_var].cat.categories))
+            sort=groupby_order)
     )
 
     st.altair_chart(chart, use_container_width=True)
@@ -171,18 +173,17 @@ def main(debug=False, log_file_path: str | None = None):
     st.markdown(SAVE_HINT)
 
     # TODO Color order is wrong?!?!
-    # TODO Add note about saving as SVG/PNG
+    # TODO Add no groupby option
     # TODO dealing with when region is in or not
     # TODO tool tips and such
-    # TODO add metric to display low count warning.
     # TODO Handle PROBCNTP and VERDATE
     # TODO Intro stuff
-    # TODO Chart scaling
+    # TODO add metric to display low count warning.
     # TODO show Analise first.
-    # TODO consider testing
+    # TODO consider testing, may have to
     # TODO Deal with PROBCNTP
     # TODO add loading indicator for data processing
-    # TODO Add no groupby option
+    # TODO Chart scaling
 
 
 if __name__ == '__main__':
