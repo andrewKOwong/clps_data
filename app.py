@@ -27,6 +27,8 @@ VALID_SKIP = 'Valid skip'
 
 GROUPBY_VARS = {AGE_KEY: 'Age', GENDER_KEY: 'Gender'}
 
+LABEL_SPLIT = '----'
+
 
 def create_sidebar():
     st.sidebar.title('CLPS Data Explorer')
@@ -71,6 +73,13 @@ def remove_valid_skips(df: pd.DataFrame) -> pd.DataFrame:
     return df[df[VAR_OF_INTEREST] != VALID_SKIP]
 
 
+def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
+    """From int column, create an ordered categorical dtype."""
+    return pd.CategoricalDtype(
+        categories=s.sort_values().unique(),
+        ordered=True)
+
+
 @st.cache_data
 def load_data():
     return pd.read_csv(CLPS_COMPRESSED_FP)
@@ -105,21 +114,28 @@ def main():
     # Groupby filtering
     df = df[[selected_var, groupby_var, WEIGHT_KEY]]
 
-    # Change ints to text, also use label wrapping
+    # Change ints to ordered categorical to preserve order,
+    # then convert to text labels.
+    # Mapping automatically converts categorical info.
+    # REFACTOR: using .cat.rename_categories() is more expressive.
     df = df.assign(**{
-        selected_var: lambda d: d[selected_var].map(
-            lambda e: svu.SurveyVar(svs[selected_var]).get_answer(e)
+        selected_var: lambda d: (
+            d[selected_var].astype(create_ordered_dtype(d[selected_var]))
+            .map(lambda e: svu.SurveyVar(svs[selected_var]).get_answer(e))
         ),
-        groupby_var: lambda d: d[groupby_var].map(
-            svu.SurveyVar(svs[groupby_var]).get_answer)
+        groupby_var: lambda d: (
+            d[groupby_var].astype(create_ordered_dtype(d[groupby_var]))
+            .map(svu.SurveyVar(svs[groupby_var]).get_answer)
+        )
     })
 
     if remove_valid_skips:
         df = df.query(f"{selected_var} != '{VALID_SKIP}'")
 
+    # Hack to wrap long labels, for splitting in altair.
     df = df.assign(**{
-        selected_var: lambda d: d[selected_var].apply(
-            lambda e: '---'.join(wrap(e, 20)))
+        selected_var: lambda d: d[selected_var].cat.rename_categories(
+            lambda e: LABEL_SPLIT.join(wrap(e, 20)))
     })
 
     if not plot_weighted:
@@ -127,27 +143,27 @@ def main():
     else:
         y = alt.Y(f'sum({WEIGHT_KEY})', title='Weighted Count')
 
-    x = alt.X(f"{selected_var}:N",
+    x = alt.X(f"{selected_var}",
+              type='ordinal',
               title=f"{selected_var} - {svs[selected_var][SVK.CONCEPT]}",
+              sort=list(df[selected_var].cat.categories),
               axis=alt.Axis(labelLimit=1000,
                             labelAngle=-45,
-                            labelExpr="split(datum.label, '---')"))
+                            labelExpr=f"split(datum.label, '{LABEL_SPLIT}')"))
 
     chart = alt.Chart(df).mark_bar()
     chart = chart.encode(
         x=x,
         y=y,
         color=alt.Color(
-            f"{groupby_var}:O", title=GROUPBY_VARS[groupby_var])
+            f"{groupby_var}:O",
+            title=GROUPBY_VARS[groupby_var],
+            sort=list(df[groupby_var].cat.categories))
     )
 
     st.altair_chart(chart, use_container_width=True)
 
-    # TODO wrap long labels e.g. EDUFLAGP
-    # TODO fix order of labels
-    # TODO try out axis flips
     # TODO dealing with when region is in or not
-    # TODO compress data
     # TODO tool tips and such
     # TODO add metric to display low count warning.
     # TODO Handle PROBCNTP and VERDATE
@@ -157,6 +173,8 @@ def main():
     # TODO consider testing
     # TODO Add note about saving as SVG/PNG
     # TODO Deal with PROBCNTP
+    # TODO add loading indicator for data processing
+    # TODO Add no groupby option
 
 
 if __name__ == '__main__':
