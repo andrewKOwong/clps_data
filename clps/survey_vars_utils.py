@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Literal
 from clps.constants import survey_vars_keys as SVK
+from clps.constants import special_vars_names as N
 
 
 class _SurveyVar:
@@ -203,6 +204,7 @@ class SurveyVars:
 
     I.e. from survey_vars.json extracted from the CLPS codebook.
     """
+    REGION_KEY = N.REGION
 
     def __init__(self, survey_vars_fp: str | Path):
         """
@@ -223,6 +225,10 @@ class SurveyVars:
     def get_var(self, key: str) -> _SurveyVar:
         """Get a survey variable by its key."""
         return self._survey_vars[key]
+
+    def get_region(self):
+        """Get a region by its key."""
+        return self._survey_vars[self.REGION_KEY]
 
 
 class SurveyVar:
