@@ -92,9 +92,12 @@ def load_data():
     return pd.read_csv(CLPS_COMPRESSED_FP)
 
 
-@st.cache_data
-def load_survey_vars():
-    return svu.load_keyed_survey_vars(SURVEY_VARS_FP)
+# REFACTOR: currently uncached. Cacheing is possible with
+# returned object is pickle serializable, but can't because of mutation.
+# Can get around by making SurveyVars able to initialize with dict
+# representation of JSON.
+def load_survey_vars(fp: str | Path):
+    return SurveyVars(fp)
 
 
 def main(debug=False, log_file_path: str | None = None):
@@ -104,7 +107,7 @@ def main(debug=False, log_file_path: str | None = None):
     create_sidebar()
     df = load_data()
 
-    svs = SurveyVars(SURVEY_VARS_FP)
+    svs = load_survey_vars(SURVEY_VARS_FP)
 
     non_selectable = [ID_KEY, AGE_KEY, GENDER_KEY, REGION_KEY, WEIGHT_KEY]
     # Load data
@@ -222,6 +225,8 @@ def main(debug=False, log_file_path: str | None = None):
     # TODO add metric to display low count warning.
     # TODO replace special var keys
     # TODO show Analise first.
+    # TODO cacheable survey vars object by making SurveyVars
+    # able to take in dictionary json representation.
     # TODO consider testing, may have to
 
 
