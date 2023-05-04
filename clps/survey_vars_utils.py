@@ -12,8 +12,8 @@ class _SurveyVar:
 
     Extensible to add more getters.
     """
-    PROBCNTP_KEY = 'PROBCNTP'
-    VERDATE_KEY = 'VERDATE'
+    PROBCNTP_KEY = N.PROBCNTP
+    VERDATE_KEY = N.VERDATE
 
     def __init__(self, survey_var: dict):
         """
