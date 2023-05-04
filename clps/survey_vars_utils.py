@@ -12,14 +12,14 @@ class _SurveyVar:
 
     Extensible to add more getters.
     """
-    PROBCNTP_KEY = N.PROBCNTP
-    VERDATE_KEY = N.VERDATE
 
-    def __init__(self, survey_var: dict):
+    def __init__(self, survey_var: dict, attempt_int_conversion: bool = True):
         """
         Args:
             survey_var: A survey variable dictionary, i.e. individual list
                 items.
+            attempt_int_conversion: Whether to attempt to convert codes to
+                integers. If this fails, codes will be left as strings.
         """
         # Original dict
         raw = self._raw = survey_var.copy()
@@ -40,15 +40,12 @@ class _SurveyVar:
             pass
         else:
             self._ans_cats = raw[SVK.ANSWER_CATEGORIES]
-            match self._name:
-                # VERDATE has a string date code
-                case self.VERDATE_KEY:
-                    self._codes = raw[SVK.CODE]
-                case self.PROBCNTP_KEY:
-                    # TODO - PROBCNTP has a special format
-                    self._codes = raw[SVK.CODE]
-                case _:
-                    self._codes = [int(c) for c in raw[SVK.CODE]]
+            self._codes = raw[SVK.CODE]
+            if attempt_int_conversion:
+                try:
+                    self._codes = [int(c) for c in self._codes]
+                except ValueError:
+                    pass
             self._frequency = raw[SVK.FREQUENCY]
             self._weighted_frequency = raw[SVK.WEIGHTED_FREQUENCY]
             self._percent = raw[SVK.PERCENT]
