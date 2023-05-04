@@ -32,24 +32,30 @@ class _SurveyVar:
         self._universe = raw[SVK.UNIVERSE]
         self._note = raw[SVK.NOTE]
         self._source = raw[SVK.SOURCE]
-        self._ans_cats = raw[SVK.ANSWER_CATEGORIES]
-        match self._name:
-            # VERDATE has a string date code
-            case self.VERDATE_KEY:
-                self._codes = raw[SVK.CODE]
-            case self.PROBCNTP_KEY:
-                # TODO - PROBCNTP has a special format
-                self._codes = raw[SVK.CODE]
-            case _:
-                self._codes = [int(c) for c in raw[SVK.CODE]]
-        self._frequency = raw[SVK.FREQUENCY]
-        self._weighted_frequency = raw[SVK.WEIGHTED_FREQUENCY]
-        self._percent = raw[SVK.PERCENT]
-        self._total = raw[SVK.TOTAL]
-        self._ans_lookup = self._generate_lookup_by_code('answer')
-        self._freq_lookup = self._generate_lookup_by_code('freq')
-        self._wt_freq_lookup = self._generate_lookup_by_code('wtfreq')
-        self._percent_lookup = self._generate_lookup_by_code('percent')
+        # Skip answer section entirely for vars where it doesn't exist.
+        try:
+            raw[SVK.ANSWER_CATEGORIES]
+        except KeyError:
+            pass
+        else:
+            self._ans_cats = raw[SVK.ANSWER_CATEGORIES]
+            match self._name:
+                # VERDATE has a string date code
+                case self.VERDATE_KEY:
+                    self._codes = raw[SVK.CODE]
+                case self.PROBCNTP_KEY:
+                    # TODO - PROBCNTP has a special format
+                    self._codes = raw[SVK.CODE]
+                case _:
+                    self._codes = [int(c) for c in raw[SVK.CODE]]
+            self._frequency = raw[SVK.FREQUENCY]
+            self._weighted_frequency = raw[SVK.WEIGHTED_FREQUENCY]
+            self._percent = raw[SVK.PERCENT]
+            self._total = raw[SVK.TOTAL]
+            self._ans_lookup = self._generate_lookup_by_code('answer')
+            self._freq_lookup = self._generate_lookup_by_code('freq')
+            self._wt_freq_lookup = self._generate_lookup_by_code('wtfreq')
+            self._percent_lookup = self._generate_lookup_by_code('percent')
 
     def _generate_lookup_by_code(
             self,
@@ -68,17 +74,47 @@ class _SurveyVar:
                 raise ValueError(f'Invalid type: {type}')
         return {c: a for c, a in zip(self.codes, other)}
 
-    def lookup_answer(self, code: int | str) -> str:
-        return self._ans_lookup[code]
+    def _lookup_by_code(
+            self,
+            code: int | str,
+            type: Literal['answer', 'freq', 'wtfreq', 'percent'],
+            suppress_missing: bool = True) -> str:
+        """"""
+        try:
+            match type:
+                case 'answer':
+                    lookup = self._ans_lookup
+                case 'freq':
+                    lookup = self._freq_lookup
+                case 'wtfreq':
+                    lookup = self._wt_freq_lookup
+                case 'percent':
+                    lookup = self._percent_lookup
+                case _:
+                    raise ValueError(f'Invalid type: {type}')
+        except AttributeError as e:
+            if suppress_missing:
+                return None
+            else:
+                raise AttributeError(
+                    "This variable doesn't have an answer section") from e
+        return lookup[code]
 
-    def lookup_freq(self, code: int | str) -> int:
-        return self._freq_lookup[code]
+    def lookup_answer(
+            self, code: int | str, suppress_missing: bool = True) -> str:
+        return self._lookup_by_code(code, 'answer', suppress_missing)
 
-    def lookup_wt_freq(self, code: int | str) -> int:
-        return self._wt_freq_lookup[code]
+    def lookup_freq(
+            self, code: int | str, suppress_missing: bool = True) -> str:
+        return self._lookup_by_code(code, 'freq', suppress_missing)
 
-    def lookup_percent(self, code: int | str) -> float:
-        return self._percent_lookup[code]
+    def lookup_wt_freq(
+            self, code: int | str, suppress_missing: bool = True) -> str:
+        return self._lookup_by_code(code, 'wtfreq', suppress_missing)
+
+    def lookup_percent(
+            self, code: int | str, suppress_missing: bool = True) -> str:
+        return self._lookup_by_code(code, 'percent', suppress_missing)
 
     # Read only data
     @property
@@ -178,7 +214,7 @@ class SurveyVars:
         # Keyed survey variables where each survey variable has been
         # initialized as a _SurveyVar object
         self._survey_vars = {
-            k: SurveyVar(v) for k, v in self._survey_vars_raw.items()}
+            k: _SurveyVar(v) for k, v in self._survey_vars_raw.items()}
 
     def __get_item__(self, key: str) -> _SurveyVar:
         """[] indexer to get a survey variable by its key."""
