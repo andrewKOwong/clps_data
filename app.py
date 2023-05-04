@@ -217,7 +217,6 @@ def main(debug=False, log_file_path: str | None = None):
             'selected_var': selected_var, 'groupby_var': groupby_var,
             }
 
-    # TODO HANDLE Verdate
     # TODO Handle PROBCNTP
     # TODO dealing with when region is in or not
     # TODO tool tips and such
