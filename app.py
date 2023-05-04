@@ -21,7 +21,6 @@ AGE_KEY = 'AGEGRP'
 REGION_KEY = 'REGION'
 GENDER_KEY = 'GDRP10'
 WEIGHT_KEY = 'WTPP'
-VAR_OF_INTEREST = 'PRIP10H'
 
 VALID_SKIP = 'Valid skip'
 
@@ -69,10 +68,6 @@ def select_groupby_var() -> str:
         label='Groupby:',
         options=[None] + list(GROUPBY_VARS.keys()),
         format_func=lambda k: 'None' if k is None else GROUPBY_VARS[k])
-
-
-def remove_valid_skips(df: pd.DataFrame) -> pd.DataFrame:
-    return df[df[VAR_OF_INTEREST] != VALID_SKIP]
 
 
 def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
