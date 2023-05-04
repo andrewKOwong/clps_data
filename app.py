@@ -207,6 +207,12 @@ def main(debug=False, log_file_path: str | None = None):
         alt.data_transformers.disable_max_rows()
         logging.debug(chart.to_json())
 
+    # Return objects for testing
+    return {'processed_data': df, 'chart': chart, 'chart_args': chart_args,
+            'survey_vars': svs,
+            'selected_var': selected_var, 'groupby_var': groupby_var,
+            }
+
     # TODO dealing with when region is in or not
     # TODO tool tips and such
     # TODO Handle PROBCNTP and VERDATE
