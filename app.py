@@ -3,8 +3,8 @@ from pathlib import Path
 from textwrap import wrap
 import streamlit as st
 import altair as alt
-from clps.constants import survey_vars_keys as SVK
 import clps.survey_vars_utils as svu
+from clps.survey_vars_utils import SurveyVars
 import clps.transform as tfm
 from importlib import reload
 reload(svu)
@@ -40,26 +40,26 @@ def create_sidebar():
 
 def select_var(
         raw_df: pd.DataFrame,
-        keyed_survey_vars: dict,
+        survey_vars: SurveyVars,
         exclude: list = None) -> str:
     selectable = raw_df.columns[~raw_df.columns.isin(exclude)]
     return st.selectbox(
         label='Variable',
         options=selectable,
-        format_func=lambda k: f"{k} - {keyed_survey_vars[k][SVK.CONCEPT]}"
+        format_func=lambda k: f"{k} - {survey_vars[k].concept}"
     )
 
 
-def select_region(keyed_survey_vars: dict):
+def select_region(survey_vars: SurveyVars) -> str:
     NATIONAL = 'National'
-    regions = svu.SurveyVar(keyed_survey_vars[REGION_KEY])
+    regions = survey_vars.get_region()
     opts = [None] + regions.codes
     return st.selectbox(
         label='Region',
         options=opts,
         format_func=lambda e:
             NATIONAL if e is None else
-            regions.get_answer(e)
+            regions.lookup_answer(e)
     )
 
 
@@ -79,12 +79,12 @@ def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
 
 def order_and_convert_code(
         s: pd.Series,
-        keyed_survey_vars: dict) -> pd.Series:
+        survey_vars: SurveyVars) -> pd.Series:
     """Converts a series of codes to text labels, as ordered categorical."""
     return (s
             .astype(create_ordered_dtype(s))
             .cat.rename_categories(
-                svu.SurveyVar(keyed_survey_vars[s.name]).get_answer))
+                survey_vars[s.name].lookup_answer))
 
 
 @st.cache_data
@@ -103,7 +103,8 @@ def main(debug=False, log_file_path: str | None = None):
 
     create_sidebar()
     df = load_data()
-    svs = load_survey_vars()
+
+    svs = SurveyVars(SURVEY_VARS_FP)
 
     non_selectable = [ID_KEY, AGE_KEY, GENDER_KEY, REGION_KEY, WEIGHT_KEY]
     # Load data
@@ -166,7 +167,7 @@ def main(debug=False, log_file_path: str | None = None):
     # in the codebook.
     x = alt.X(f"{selected_var}",
               type='ordinal',
-              title=f"{selected_var} - {svs[selected_var][SVK.CONCEPT]}",
+              title=f"{selected_var} - {svs[selected_var].concept}",
               sort=list(df[selected_var].cat.categories),
               axis=alt.Axis(labelLimit=1000,
                             labelAngle=-45,
@@ -213,16 +214,15 @@ def main(debug=False, log_file_path: str | None = None):
             'selected_var': selected_var, 'groupby_var': groupby_var,
             }
 
+    # TODO HANDLE Verdate
+    # TODO Handle PROBCNTP
     # TODO dealing with when region is in or not
     # TODO tool tips and such
-    # TODO Handle PROBCNTP and VERDATE
     # TODO Intro stuff
     # TODO add metric to display low count warning.
+    # TODO replace special var keys
     # TODO show Analise first.
     # TODO consider testing, may have to
-    # TODO Deal with PROBCNTP
-    # TODO add loading indicator for data processing
-    # TODO Chart scaling
 
 
 if __name__ == '__main__':
