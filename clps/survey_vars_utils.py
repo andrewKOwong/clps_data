@@ -216,7 +216,7 @@ class SurveyVars:
         self._survey_vars = {
             k: _SurveyVar(v) for k, v in self._survey_vars_raw.items()}
 
-    def __get_item__(self, key: str) -> _SurveyVar:
+    def __getitem__(self, key: str) -> _SurveyVar:
         """[] indexer to get a survey variable by its key."""
         return self._survey_vars[key]
 
