@@ -144,9 +144,9 @@ def main(debug=False, log_file_path: str | None = None):
     })
 
     if not plot_weighted:
-        y = alt.Y(f"count({selected_var})", title='Count')
+        y = alt.Y(f"count({selected_var}):Q", title='Count')
     else:
-        y = alt.Y(f'sum({WEIGHT_KEY})', title='Weighted Count')
+        y = alt.Y(f'sum({WEIGHT_KEY}):Q', title='Weighted Count')
 
     x = alt.X(f"{selected_var}",
               type='ordinal',
@@ -165,7 +165,8 @@ def main(debug=False, log_file_path: str | None = None):
         color=alt.Color(
             f"{groupby_var}:O",
             title=GROUPBY_VARS[groupby_var],
-            sort=groupby_order)
+            sort=alt.Sort(groupby_order)),
+        order=alt.Order(f'color_{groupby_var}_sort_index:Q', sort='ascending')
     )
 
     st.altair_chart(chart, use_container_width=True)
