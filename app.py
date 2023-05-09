@@ -218,6 +218,8 @@ def main(debug=False, log_file_path: str | None = None):
             }
 
     # TODO Handle PROBCNTP
+    #   including display aggregated or not
+    # TODO Check PROBCNTP proportions are correct against codebook
     # TODO dealing with when region is in or not
     # TODO tool tips and such
     # TODO Intro stuff
