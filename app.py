@@ -29,13 +29,32 @@ GROUPBY_VARS = {AGE_KEY: 'Age', GENDER_KEY: 'Gender'}
 LABEL_SPLIT = '----'
 
 SAVE_HINT = 'To save the chart, click on dots in the upper-right corner.'
+INTRO = (
+    "The [Canadian Legal Problems Survey (CLPS)]"
+    "(https://www.justice.gc.ca/eng/rp-pr/jr/survey-enquete.html)"
+    " is a national survey of Canadians' experiences with the justice system,"
+    " most recently conducted by Statisics Canada in 2021."
+    " The original data is provided by StatsCan via a"
+    " [Public Use Microdata File]"
+    "(https://www150.statcan.gc.ca/n1/pub/35-25-0002/352500022022001-eng.htm)."
+    " \n\n"
+    " This app displays plots for each survey variable of the data:"
+    " \n- Select a survey variable in the first dropdown (type to search)."
+    " \n- Optionally, filter by region."
+    " \n- Data may also be grouped by age or gender."
+    " \n- Data is displayed as weighted counts to represent the entire "
+    " population of Canada. To see actual counts of survey respondents,"
+    " uncheck the box."
+    " \n- Some survey questions are not presented to respondents based on "
+    " their answers to previous questions. These are termed \"valid skips\"."
+    " To include these, uncheck the box."
+
+)
 
 
 def create_sidebar():
     st.sidebar.title('CLPS Data Explorer')
-    st.sidebar.markdown('''
-    This is a simple app to explore the CLPS data.
-    ''')
+    st.sidebar.write(INTRO)
 
 
 def select_var(
