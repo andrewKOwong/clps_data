@@ -90,8 +90,8 @@ class _SurveyVar:
         ans_cats.pop(sum_idx)
         # Insert the NEW individual answer categories.
         # Originally, was going to append the code to the "Number of ..."
-        # string, but that makes the labels too long so they occlude each
-        # other. Instead, just use the code, as the x axis label explains
+        # string, but that makes the labels kind of repetitive.
+        # Instead, just use the code, as the x axis label explains
         # it anyways.
         indiv_ans_cats = [f'{c}' for c in indiv_codes]
         for a in indiv_ans_cats:
