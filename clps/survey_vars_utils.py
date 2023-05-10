@@ -12,6 +12,7 @@ class _SurveyVar:
 
     Extensible to add more getters.
     """
+    PROBCNTP_AGGREGATE_CODE = N.PROBCNTP_AGGREGATE_CODE
 
     def __init__(self, survey_var: dict, attempt_int_conversion: bool = True):
         """
@@ -39,18 +40,73 @@ class _SurveyVar:
         except KeyError:
             pass
         else:
-            self._ans_cats = raw[SVK.ANSWER_CATEGORIES]
-            self._codes = raw[SVK.CODE]
-            if attempt_int_conversion:
-                try:
-                    self._codes = [int(c) for c in self._codes]
-                except ValueError:
-                    pass
-            self._frequency = raw[SVK.FREQUENCY]
-            self._weighted_frequency = raw[SVK.WEIGHTED_FREQUENCY]
-            self._percent = raw[SVK.PERCENT]
-            self._total = raw[SVK.TOTAL]
-            self._generate_lookup_by_code()
+            if self._name == N.PROBCNTP:
+                self._handle_PROBCNTP_answer_section()
+                # Don't generate freq etc. lookups
+                self._generate_ans_lookup_by_code()
+            else:
+                self._handle_answer_section(attempt_int_conversion)
+                self._generate_lookup_by_code()
+
+    def _handle_answer_section(self, attempt_int_conversion: bool) -> None:
+        self._ans_cats = self._raw[SVK.ANSWER_CATEGORIES]
+        self._codes = self._raw[SVK.CODE]
+        if attempt_int_conversion:
+            try:
+                self._codes = [int(c) for c in self._codes]
+            except ValueError:
+                pass
+        self._frequency = self._raw[SVK.FREQUENCY]
+        self._weighted_frequency = self._raw[SVK.WEIGHTED_FREQUENCY]
+        self._percent = self._raw[SVK.PERCENT]
+        self._total = self._raw[SVK.TOTAL]
+
+    def _handle_PROBCNTP_answer_section(self) -> None:
+        raw = self._raw
+        self._aggregate_ans_cats = raw[SVK.ANSWER_CATEGORIES]
+        self._aggregate_codes = raw[SVK.CODE]
+        self._aggregate_freqs = raw[SVK.FREQUENCY]
+        self._aggregate_wt_freqs = raw[SVK.WEIGHTED_FREQUENCY]
+        self._aggregate_percents = raw[SVK.PERCENT]
+        self._aggregate_totals = raw[SVK.TOTAL]
+        # Copy out the aggregate codes
+        codes = self._aggregate_codes.copy()
+        # Position of the 01-16 str code
+        sum_idx = codes.index(self.PROBCNTP_AGGREGATE_CODE)
+        # Remove the aggregate code
+        agg_code = codes.pop(sum_idx)
+        # This might as well be hard coded, but it's the 1 and 16
+        start, end = tuple([int(c) for c in agg_code.split('-')])
+        indiv_codes = list(range(start, end + 1))
+        # Insert the individual codes
+        indiv_codes.reverse()
+        for c in indiv_codes:
+            codes.insert(sum_idx, c)
+        codes = [int(c) for c in codes]
+
+        # Copy out the aggregate answer categories
+        ans_cats = self._aggregate_ans_cats.copy()
+        # Remove the aggregate answer category
+        ans_cats.pop(sum_idx)
+        # Insert the NEW individual answer categories.
+        # Originally, was going to append the code to the "Number of ..."
+        # string, but that makes the labels too long so they occlude each
+        # other. Instead, just use the code, as the x axis label explains
+        # it anyways.
+        indiv_ans_cats = [f'{c}' for c in indiv_codes]
+        for a in indiv_ans_cats:
+            ans_cats.insert(sum_idx, a)
+
+        self._ans_cats = ans_cats
+        self._codes = codes
+
+        def error_func(self):
+            raise NotImplementedError(
+                "PROBCNTP frequency/weighted frequency/percent lookup is not "
+                "implemented yet."
+            )
+        self.lookup_freq = self.lookup_wt_freq = error_func
+        self.lookup_percent = error_func
 
     def _generate_lookup_by_code(self) -> str:
         """"""
@@ -62,6 +118,10 @@ class _SurveyVar:
             c: a for c, a in zip(self.codes, self.wt_freqs)}
         self._percent_lookup = {
             c: a for c, a in zip(self.codes, self.percents)}
+
+    def _generate_ans_lookup_by_code(self) -> dict:
+        self._ans_lookup = {
+            c: a for c, a in zip(self.codes, self.answer_categories)}
 
     def _lookup_by_code(
             self,
@@ -209,64 +269,13 @@ class SurveyVars:
         self._survey_vars = {
             k: _SurveyVar(v) for k, v in self._survey_vars_raw.items()}
 
-        self._expand_PROBCNTP_codes()
+        test = self.get_var('PROBCNTP')
+        print(test.codes)
+        print(test.ans_cats)
 
     def __getitem__(self, key: str) -> _SurveyVar:
         """[] indexer to get a survey variable by its key."""
         return self._survey_vars[key]
-
-    def _expand_PROBCNTP_codes(self):
-        """Expand the aggregated PROBCNTP code.
-
-        PROBCNTP contains an aggregated code '01 - 16'. This code is drawn from
-        survey variables PRIP10A to PRIP10S. This method draws from the
-        individual survey variables in order to expand the aggregated code into
-        int-able codes.
-        Note: this can only be called after the main _survey_vars dict is
-        initialized.
-        """
-        # First move old attributes to aggregated attributes
-        probcntp = self.get_var(N.PROBCNTP)
-        probcntp._aggregate_codes = probcntp.codes.copy()
-        probcntp._aggregate_ans_cats = probcntp.ans_cats.copy()
-        probcntp._aggregate_freqs = probcntp.freqs.copy()
-        probcntp._aggregate_wt_freqs = probcntp.wt_freqs.copy()
-        probcntp._aggregate_percents = probcntp.percents.copy()
-        probcntp._aggregate_totals = probcntp.totals.copy()
-        # Position of the 01-16 str code
-        sum_idx = probcntp._aggregate_codes.index(self.PROBCNTP_AGGREGATE_CODE)
-        # This might as well be hard coded, but it's the 1 and 16
-        start, end = tuple([
-            int(c) for c in probcntp._aggregate_codes[sum_idx].split(' - ')])
-        # Get ans_cats, codes, freqs, wt_freqs, percents, totals to insert
-        # New answer categories are concepts from the PRIP components.
-        # Reverse for later insertion.
-        prip_ans_cats = [
-            self._survey_vars[k].concept for k in self.PRIP10_KEYS][::-1]
-        print(prip_ans_cats)
-        print(len(prip_ans_cats))
-        prip_codes = list(range(start, len(prip_ans_cats) + 1))[::-1]
-        prip_freqs = [
-            self.get_var(k).lookup_freq(self.PRIP10_YES_CODE)
-            for k in self.PRIP10_KEYS][::-1]
-        prip_wt_freqs = [
-            self.get_var(k).lookup_wt_freq(self.PRIP10_YES_CODE)
-            for k in self.PRIP10_KEYS][::-1]
-        prip_percents = [
-            self.get_var(k).lookup_percent(self.PRIP10_YES_CODE)
-            for k in self.PRIP10_KEYS][::-1]
-
-        fields = [probcntp._ans_cats, probcntp._codes, probcntp._frequency,
-                  probcntp._weighted_frequency, probcntp._percent]
-        prips = [prip_ans_cats, prip_codes, prip_freqs, prip_wt_freqs,
-                 prip_percents]
-
-        for f, prip in zip(fields, prips):
-            f.pop(sum_idx)
-            for e in prip:
-                f.insert(sum_idx, e)
-        probcntp._codes = [int(c) for c in probcntp._codes]
-        probcntp._generate_lookup_by_code()
 
     def get_var(self, key: str) -> _SurveyVar:
         """Get a survey variable by its key."""

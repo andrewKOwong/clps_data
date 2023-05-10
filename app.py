@@ -174,6 +174,8 @@ def main(debug=False, log_file_path: str | None = None):
               sort=list(df[selected_var].cat.categories),
               axis=alt.Axis(labelLimit=1000,
                             labelAngle=-45,
+                            # False seems not be the default, despite the docs?
+                            labelOverlap=False,
                             labelExpr=f"split(datum.label, '{LABEL_SPLIT}')"))
     chart_args['x'] = x
     # Use color for groupbys
