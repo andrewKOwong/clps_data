@@ -269,10 +269,6 @@ class SurveyVars:
         self._survey_vars = {
             k: _SurveyVar(v) for k, v in self._survey_vars_raw.items()}
 
-        test = self.get_var('PROBCNTP')
-        print(test.codes)
-        print(test.ans_cats)
-
     def __getitem__(self, key: str) -> _SurveyVar:
         """[] indexer to get a survey variable by its key."""
         return self._survey_vars[key]
