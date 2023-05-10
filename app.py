@@ -193,7 +193,7 @@ def main(debug=False, log_file_path: str | None = None):
             title=GROUPBY_VARS[groupby_var],
             sort=alt.Sort(groupby_order))
         order = alt.Order(
-            f'color_{groupby_var}_sort_index:Q', sort='ascending')
+            f'color_{groupby_var}_sort_index:Q', sort='descending')
         chart_args['color'] = color
         chart_args['order'] = order
 
@@ -218,19 +218,6 @@ def main(debug=False, log_file_path: str | None = None):
             'survey_vars': svs,
             'selected_var': selected_var, 'groupby_var': groupby_var,
             }
-
-    # TODO Handle PROBCNTP
-    #   including display aggregated or not
-    # TODO Check PROBCNTP proportions are correct against codebook
-    # TODO dealing with when region is in or not
-    # TODO tool tips and such
-    # TODO Intro stuff
-    # TODO add metric to display low count warning.
-    # TODO replace special var keys
-    # TODO show Analise first.
-    # TODO cacheable survey vars object by making SurveyVars
-    # able to take in dictionary json representation.
-    # TODO consider testing, may have to
 
 
 if __name__ == '__main__':
