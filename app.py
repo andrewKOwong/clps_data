@@ -167,7 +167,8 @@ def main(debug=False, log_file_path: str | None = None):
     # Check if data contains "Valid skip" codes.
     # If so, add checkbox to give the option to remove them.
     if VALID_SKIP in df[selected_var].cat.categories:
-        remove_valid_skips = st.checkbox('Remove valid skips', value=True)
+        with skip_container:
+            remove_valid_skips = st.checkbox('Remove valid skips', value=True)
         if remove_valid_skips:
             df = df.query(f"{selected_var} != '{VALID_SKIP}'")
     # END: DATA TRANSFORMATIONS
