@@ -128,7 +128,7 @@ def main(debug=False, log_file_path: str | None = None):
 
     svs = load_survey_vars(SURVEY_VARS_FP)
 
-    non_selectable = [ID_KEY, AGE_KEY, GENDER_KEY, REGION_KEY, WEIGHT_KEY]
+    non_selectable = [ID_KEY, AGE_KEY, GENDER_KEY, WEIGHT_KEY]
     # Load data
     # Choose a variable for display
     selected_var = select_var(df, svs, non_selectable)
