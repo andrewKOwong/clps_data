@@ -82,10 +82,22 @@ def select_region(survey_vars: SurveyVars) -> str:
     )
 
 
-def select_groupby_var() -> str:
+def select_groupby_var(selected_var_to_exclude: str) -> str:
+    """Select a variable to groupby, if any.
+
+    Args:
+        selected_var_to_exclude: If the variable selected for display is one of
+            the avaiable groupby variables, it is removed as an option.
+
+    Returns:
+        Str code for variable to groupby, or `None`.
+    """
+    options = [None] + list(GROUPBY_VARS.keys())
+    if selected_var_to_exclude in options:
+        options.remove(selected_var_to_exclude)
     return st.selectbox(
         label='Groupby:',
-        options=[None] + list(GROUPBY_VARS.keys()),
+        options=options,
         format_func=lambda k: 'None' if k is None else GROUPBY_VARS[k])
 
 
@@ -128,14 +140,14 @@ def main(debug=False, log_file_path: str | None = None):
 
     svs = load_survey_vars(SURVEY_VARS_FP)
 
-    non_selectable = [ID_KEY, AGE_KEY, GENDER_KEY, WEIGHT_KEY]
+    non_selectable = [ID_KEY, WEIGHT_KEY]
     # Load data
     # Choose a variable for display
     selected_var = select_var(df, svs, non_selectable)
     # Choose region to filter
     region = select_region(svs)
     # Choose variable for bar chart groupings
-    groupby_var = select_groupby_var()
+    groupby_var = select_groupby_var(selected_var)
 
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
