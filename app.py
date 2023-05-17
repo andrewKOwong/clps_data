@@ -17,14 +17,33 @@ CLPS_COMPRESSED_FP = DATA_FOLDER / 'clps.zip'
 SURVEY_VARS_FP = DATA_FOLDER / 'survey_vars.json'
 
 ID_KEY = 'PUMFID'
+NUMPPLHOUSE_KEY = 'PHHP01P'
+NUMPPLHOUSE18_KEY = 'PHHP02P'
 AGE_KEY = 'AGEGRP'
 REGION_KEY = 'REGION'
 GENDER_KEY = 'GDRP10'
+RURALURBAN_KEY = 'RURURBP'
+SEXORIENT_KEY = 'SORFLAGP'
+INDIG_KEY = 'IIDFLGP'
+VISMINORITY_KEY = 'VISMFLP'
+EDU_KEY = 'EDUGRPP'
+EMPLOYED_KEY = 'MAP01'
 WEIGHT_KEY = 'WTPP'
 
 VALID_SKIP = 'Valid skip'
 
-GROUPBY_VARS = {AGE_KEY: 'Age', GENDER_KEY: 'Gender'}
+GROUPBY_VARS = {
+    NUMPPLHOUSE_KEY: 'Number of People in Household',
+    NUMPPLHOUSE18_KEY: 'Number of People in Household 18+',
+    AGE_KEY: 'Age',
+    GENDER_KEY: 'Gender',
+    RURALURBAN_KEY: 'Rural/Urban',
+    SEXORIENT_KEY: 'Sexual Orientation',
+    INDIG_KEY: 'Indigenous Identity',
+    VISMINORITY_KEY: 'Visible Minority',
+    EDU_KEY: 'Highest Education',
+    EMPLOYED_KEY: 'Worked at Job/Business in Last 12 Months'
+}
 
 LABEL_SPLIT = '----'
 
