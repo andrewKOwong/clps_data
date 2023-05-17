@@ -139,7 +139,9 @@ def main(debug=False, log_file_path: str | None = None):
 
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
-    remove_valid_skips = st.checkbox('Remove valid skips', value=True)
+
+    # Space for valid skip removal container.
+    skip_container = st.container()
 
     # BEGIN: DATA TRANSFORMATIONS
     # Region filtering
@@ -162,9 +164,12 @@ def main(debug=False, log_file_path: str | None = None):
             groupby_var: lambda d: (
                 order_and_convert_code(d[groupby_var], svs))})
 
-    # Remove valid skips
-    if remove_valid_skips:
-        df = df.query(f"{selected_var} != '{VALID_SKIP}'")
+    # Check if data contains "Valid skip" codes.
+    # If so, add checkbox to give the option to remove them.
+    if VALID_SKIP in df[selected_var].cat.categories:
+        remove_valid_skips = st.checkbox('Remove valid skips', value=True)
+        if remove_valid_skips:
+            df = df.query(f"{selected_var} != '{VALID_SKIP}'")
     # END: DATA TRANSFORMATIONS
 
     # BEGIN: CHART PREPARATION
