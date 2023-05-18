@@ -137,6 +137,48 @@ def order_and_convert_code(
                 survey_vars[s.name].lookup_answer))
 
 
+def temp_process_data(
+        df: pd.DataFrame,
+        selected_var: str,
+        groupby_var: str | None,
+        weighted: bool,
+        ) -> pd.DataFrame:
+    df = df.copy()
+
+    groupby_list = [selected_var]
+    if groupby_var is not None:
+        groupby_list.append(groupby_var)
+    grpby = df.groupby(groupby_list)[[WEIGHT_KEY]]  # groupby object
+
+    if weighted:
+        out = grpby.sum()
+    else:
+        out = grpby.count()
+
+    # # Bug with streamlit? Where categorical indexes display with a warning
+    # # That "The value is not part of the allowed options" along with a
+    # # yellow exclamtion mark. This is a workaround.
+    # out.index = out.index.astype('object')
+
+    return (out
+            .round()
+            .astype(int)
+            .reset_index()
+            )
+
+
+def style_datatable(
+        df: pd.DataFrame) -> pd.io.formats.style.Styler:
+    return (df
+            .style
+            # Note: hide(axis='index') doesn't work with streamlit.
+            # Streamlit as of >= 1.10 can't hide row indices at all in a
+            # st.dataframe call.
+            # https://docs.streamlit.io/knowledge-base/using-streamlit/hide-row-indices-displaying-dataframe
+            .hide(axis='index')
+            )
+
+
 @st.cache_data
 def load_data():
     return pd.read_csv(CLPS_COMPRESSED_FP)
@@ -203,6 +245,17 @@ def main(debug=False, log_file_path: str | None = None):
         if remove_valid_skips:
             df = df.query(f"{selected_var} != '{VALID_SKIP}'")
     # END: DATA TRANSFORMATIONS
+
+    # TODO Testing data tables
+    # Need to do counts, or not counts.
+    # Groupbys or not groupbys.
+    df2 = df.copy()
+
+    df2 = temp_process_data(df2, selected_var, groupby_var, plot_weighted)
+    print(df2)
+
+    df2 = style_datatable(df2)
+    st.dataframe(df2)
 
     # BEGIN: CHART PREPARATION
     # Hack to wrap long labels, for splitting in altair.
