@@ -47,6 +47,9 @@ GROUPBY_VARS = {
 
 LABEL_SPLIT = '----'
 
+Y_FREQ_AXIS_LABEL = 'Count'
+Y_WT_FREQ_AXIS_LABEL = 'Weighted Count'
+
 SAVE_HINT = 'To save the chart, click on dots in the upper-right corner.'
 INTRO = (
     "The [Canadian Legal Problems Survey (CLPS)]"
@@ -179,6 +182,54 @@ def style_datatable(
             )
 
 
+def temp_chart(
+        df: pd.DataFrame,
+        survey_vars: SurveyVars,
+        selected_var: str,
+        groupby_var: str | None,
+        plot_weighted: bool) -> alt.Chart:
+    chart_args = {}
+
+    if plot_weighted:
+        y = alt.Y(f"{WEIGHT_KEY}:Q", title=Y_WT_FREQ_AXIS_LABEL)
+    else:
+        y = alt.Y(f"{WEIGHT_KEY}:Q", title=Y_FREQ_AXIS_LABEL)
+    chart_args['y'] = y
+
+    x = alt.X(f"{selected_var}",
+              type='ordinal',
+              title=f"{selected_var} - {survey_vars[selected_var].concept}",
+              sort=list(df[selected_var].cat.categories),
+              axis=alt.Axis(labelLimit=1000,
+                            labelAngle=-45,
+                            # False seems not be the default, despite the docs?
+                            labelOverlap=False,
+                            labelExpr=f"split(datum.label, '{LABEL_SPLIT}')"))
+    chart_args['x'] = x
+
+    if groupby_var is not None:
+        groupby_order = list(df[groupby_var].cat.categories)
+        # Color is also ordered according to the codebook.
+        # For info about how to order both the legend and the order on the
+        # bar chart stacks, see:
+        # https://github.com/altair-viz/altair/issues/245#issuecomment-748443434
+        # The above is actually the official recommended solution according to
+        # the docs (search "follow the approach in this issue comment"):
+        # https://altair-viz.github.io/user_guide/encodings/channels.html#order
+        color = alt.Color(
+            f"{groupby_var}:O",
+            title=GROUPBY_VARS[groupby_var],
+            sort=alt.Sort(groupby_order))
+        order = alt.Order(
+            f'color_{groupby_var}_sort_index:Q', sort='descending')
+        chart_args['color'] = color
+        chart_args['order'] = order
+
+    return (alt.Chart(df)
+            .mark_bar()
+            .encode(**chart_args))
+
+
 @st.cache_data
 def load_data():
     return pd.read_csv(CLPS_COMPRESSED_FP)
@@ -244,6 +295,10 @@ def main(debug=False, log_file_path: str | None = None):
             remove_valid_skips = st.checkbox('Remove valid skips', value=True)
         if remove_valid_skips:
             df = df.query(f"{selected_var} != '{VALID_SKIP}'")
+            df = df.assign(**{
+                selected_var:
+                    lambda d: d[selected_var].cat.remove_unused_categories()
+            })
     # END: DATA TRANSFORMATIONS
 
     # TODO Testing data tables
@@ -253,9 +308,20 @@ def main(debug=False, log_file_path: str | None = None):
 
     df2 = temp_process_data(df2, selected_var, groupby_var, plot_weighted)
     print(df2)
+    chart_df2 = df2.copy()
 
     df2 = style_datatable(df2)
     st.dataframe(df2)
+
+    chart_df2 = chart_df2.assign(**{
+        selected_var: lambda d: d[selected_var].cat.rename_categories(
+            lambda e: LABEL_SPLIT.join(wrap(e, 20)))
+    })
+
+    chart_df2 = temp_chart(
+        chart_df2, svs, selected_var, groupby_var, plot_weighted)
+
+    st.altair_chart(chart_df2, use_container_width=True)
 
     # BEGIN: CHART PREPARATION
     # Hack to wrap long labels, for splitting in altair.
