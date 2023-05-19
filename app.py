@@ -225,7 +225,7 @@ def temp_chart(
         # the docs (search "follow the approach in this issue comment"):
         # https://altair-viz.github.io/user_guide/encodings/channels.html#order
         color = alt.Color(
-            f"{groupby_var}:O",
+            f"{groupby_var}:N",
             title=GROUPBY_VARS[groupby_var],
             sort=alt.Sort(groupby_order))
         order = alt.Order(
