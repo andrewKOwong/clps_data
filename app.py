@@ -70,6 +70,8 @@ INTRO = (
     " \n- Some survey questions are not presented to respondents based on "
     " their answers to previous questions. These are termed \"valid skips\"."
     " To include these, uncheck the box."
+    " \n\n"
+    " Drag to pan, scroll to zoom."
 
 )
 
@@ -321,7 +323,7 @@ def main(debug=False, log_file_path: str | None = None):
     chart_df2 = temp_chart(
         chart_df2, svs, selected_var, groupby_var, plot_weighted)
 
-    st.altair_chart(chart_df2, use_container_width=True)
+    st.altair_chart(chart_df2.interactive(), use_container_width=True)
 
     # BEGIN: CHART PREPARATION
     # Hack to wrap long labels, for splitting in altair.
