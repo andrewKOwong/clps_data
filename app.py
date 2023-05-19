@@ -340,9 +340,6 @@ def main(debug=False, log_file_path: str | None = None):
     df = temp_process_data(df, selected_var, groupby_var, plot_weighted)
     chart_df = df.copy()
 
-    df = style_datatable(df)
-    st.dataframe(df)
-
     # Hack to wrap long labels, for splitting in altair.
     # `wrap` breaks long str into a list of str, then stitch them back together
     # with LABEL_SPLIT delimiter. Altair then uses this delimiter to split
@@ -363,6 +360,9 @@ def main(debug=False, log_file_path: str | None = None):
     # Hint for the user on how to save the chart
     st.markdown(SAVE_HINT)
 
+    # Display datatable
+    df = style_datatable(df)
+    st.dataframe(df)
     # Logging for debugging
     if debug:
         import logging
