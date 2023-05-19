@@ -258,7 +258,12 @@ def temp_chart(
 
     return (alt.Chart(df)
             .mark_bar()
-            .encode(**chart_args))
+            .encode(**chart_args)
+            .configure_axis(labelFontSize=14,
+                            titleFontSize=16,
+                            # labelFontWeight='bold',
+                            # titleFontWeight='bold',
+                            ))
 
 
 @st.cache_data
@@ -352,7 +357,9 @@ def main(debug=False, log_file_path: str | None = None):
     chart_df2 = temp_chart(
         chart_df2, svs, selected_var, groupby_var, plot_weighted)
 
-    st.altair_chart(chart_df2.interactive(), use_container_width=True)
+    st.altair_chart(chart_df2.interactive(),
+                    use_container_width=True,
+                    )
 
     # BEGIN: CHART PREPARATION
     # Hack to wrap long labels, for splitting in altair.
