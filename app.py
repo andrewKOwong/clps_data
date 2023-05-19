@@ -196,14 +196,17 @@ def temp_chart(
     LABEL_SELECT_VAR = 'Category'
     LABEL_GROUPBY_VAR = 'Sub-group'
 
+    # Assemble chart arguments into dict for expansion
     chart_args = {}
-
+    # Choose Y axis title, depending if un/weighted counts are used
     if plot_weighted:
         y = alt.Y(f"{WEIGHT_KEY}:Q", title=Y_WT_FREQ_AXIS_LABEL)
     else:
         y = alt.Y(f"{WEIGHT_KEY}:Q", title=Y_FREQ_AXIS_LABEL)
     chart_args['y'] = y
 
+    # X axis
+    # Sorting of labels is by the original order in the codebook.
     x = alt.X(f"{selected_var}",
               type='ordinal',
               title=f"{selected_var} - {survey_vars[selected_var].concept}",
@@ -215,6 +218,7 @@ def temp_chart(
                             labelExpr=f"split(datum.label, '{LABEL_SPLIT}')"))
     chart_args['x'] = x
 
+    # Groupby is encoded in color.
     if groupby_var is not None:
         groupby_order = list(df[groupby_var].cat.categories)
         # Color is also ordered according to the codebook.
@@ -233,6 +237,7 @@ def temp_chart(
         chart_args['color'] = color
         chart_args['order'] = order
 
+    # Format the tooltips
     tooltip = [
         alt.Tooltip(
             f"{WEIGHT_KEY}:Q",
@@ -244,16 +249,6 @@ def temp_chart(
             alt.Tooltip(f"{groupby_var}:O", title=LABEL_GROUPBY_VAR)
             if groupby_var else None,
         )
-    # alt.Tooltip([alt.Tooltip()]
-    #     shorthand=[[alt.Tooltip()]
-    #         f'{WEIGHT_KEY}',[alt.Tooltip()]
-    #         f'{selected_var}'[alt.Tooltip()]
-    #         ],[alt.Tooltip()]
-    #     format={[alt.Tooltip()]
-    #         f"{WEIGHT_KEY}": 'Weighted Count',[alt.Tooltip()]
-    #     }[alt.Tooltip()]
-    # )
-
     chart_args['tooltip'] = tooltip
 
     return (alt.Chart(df)
@@ -340,82 +335,31 @@ def main(debug=False, log_file_path: str | None = None):
     # TODO Testing data tables
     # Need to do counts, or not counts.
     # Groupbys or not groupbys.
-    df2 = df.copy()
+    df = df.copy()
 
-    df2 = temp_process_data(df2, selected_var, groupby_var, plot_weighted)
-    print(df2)
-    chart_df2 = df2.copy()
+    df = temp_process_data(df, selected_var, groupby_var, plot_weighted)
+    chart_df = df.copy()
 
-    df2 = style_datatable(df2)
-    st.dataframe(df2)
+    df = style_datatable(df)
+    st.dataframe(df)
 
-    chart_df2 = chart_df2.assign(**{
-        selected_var: lambda d: d[selected_var].cat.rename_categories(
-            lambda e: LABEL_SPLIT.join(wrap(e, 20)))
-    })
-
-    chart_df2 = temp_chart(
-        chart_df2, svs, selected_var, groupby_var, plot_weighted)
-
-    st.altair_chart(chart_df2.interactive(),
-                    use_container_width=True,
-                    )
-
-    # BEGIN: CHART PREPARATION
     # Hack to wrap long labels, for splitting in altair.
     # `wrap` breaks long str into a list of str, then stitch them back together
     # with LABEL_SPLIT delimiter. Altair then uses this delimiter to split
     # the str again using Vega expressions.
-    df = df.assign(**{
+    chart_df = chart_df.assign(**{
         selected_var: lambda d: d[selected_var].cat.rename_categories(
             lambda e: LABEL_SPLIT.join(wrap(e, 20)))
     })
 
-    # Assemble chart arguments
-    chart_args = {}
-    # Y is dependent on whether weights are used
-    if not plot_weighted:
-        y = alt.Y(f"count({selected_var}):Q", title='Count')
-    else:
-        y = alt.Y(f'sum({WEIGHT_KEY}):Q', title='Weighted Count')
-    chart_args['y'] = y
-    # X is bar chart labels. Sorting of the labels is by the original order
-    # in the codebook.
-    x = alt.X(f"{selected_var}",
-              type='ordinal',
-              title=f"{selected_var} - {svs[selected_var].concept}",
-              sort=list(df[selected_var].cat.categories),
-              axis=alt.Axis(labelLimit=1000,
-                            labelAngle=-45,
-                            # False seems not be the default, despite the docs?
-                            labelOverlap=False,
-                            labelExpr=f"split(datum.label, '{LABEL_SPLIT}')"))
-    chart_args['x'] = x
-    # Use color for groupbys
-    if groupby_var is not None:
-        groupby_order = list(df[groupby_var].cat.categories)
-        # Color is also ordered according to the codebook.
-        # For info about how to order both the legend and the order on the
-        # bar chart stacks, see:
-        # https://github.com/altair-viz/altair/issues/245#issuecomment-748443434
-        # The above is actually the official recommended solution according to
-        # the docs (search "follow the approach in this issue comment"):
-        # https://altair-viz.github.io/user_guide/encodings/channels.html#order
-        color = alt.Color(
-            f"{groupby_var}:O",
-            title=GROUPBY_VARS[groupby_var],
-            sort=alt.Sort(groupby_order))
-        order = alt.Order(
-            f'color_{groupby_var}_sort_index:Q', sort='descending')
-        chart_args['color'] = color
-        chart_args['order'] = order
+    chart_df = temp_chart(
+        chart_df, svs, selected_var, groupby_var, plot_weighted)
 
-    # Make the chart object
-    chart = alt.Chart(df).mark_bar().encode(**chart_args)
-    # END: CHART PREPARATION
+    st.altair_chart(chart_df.interactive(),
+                    use_container_width=True,
+                    )
 
     # Plot the chart
-    st.altair_chart(chart, use_container_width=True)
     # Hint for the user on how to save the chart
     st.markdown(SAVE_HINT)
 
@@ -424,10 +368,10 @@ def main(debug=False, log_file_path: str | None = None):
         import logging
         logging.basicConfig(filename=log_file_path, level=logging.DEBUG)
         alt.data_transformers.disable_max_rows()
-        logging.debug(chart.to_json())
+        logging.debug(chart_df.to_json())
 
     # Return objects for testing
-    return {'processed_data': df, 'chart': chart, 'chart_args': chart_args,
+    return {'processed_data': df, 'chart': chart_df,
             'survey_vars': svs,
             'selected_var': selected_var, 'groupby_var': groupby_var,
             }
