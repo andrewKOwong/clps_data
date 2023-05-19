@@ -190,6 +190,12 @@ def temp_chart(
         selected_var: str,
         groupby_var: str | None,
         plot_weighted: bool) -> alt.Chart:
+
+    LABEL_WEIGHTED = 'Weighted Count'
+    LABEL_UNWEIGHTED = 'Count'
+    LABEL_SELECT_VAR = 'Category'
+    LABEL_GROUPBY_VAR = 'Sub-group'
+
     chart_args = {}
 
     if plot_weighted:
@@ -226,6 +232,29 @@ def temp_chart(
             f'color_{groupby_var}_sort_index:Q', sort='descending')
         chart_args['color'] = color
         chart_args['order'] = order
+
+    tooltip = [
+        alt.Tooltip(
+            f"{WEIGHT_KEY}:Q",
+            title=LABEL_WEIGHTED if plot_weighted else LABEL_UNWEIGHTED),
+        alt.Tooltip(f"{selected_var}:O", title=LABEL_SELECT_VAR),
+        ]
+    if groupby_var is not None:
+        tooltip.append(
+            alt.Tooltip(f"{groupby_var}:O", title=LABEL_GROUPBY_VAR)
+            if groupby_var else None,
+        )
+    # alt.Tooltip([alt.Tooltip()]
+    #     shorthand=[[alt.Tooltip()]
+    #         f'{WEIGHT_KEY}',[alt.Tooltip()]
+    #         f'{selected_var}'[alt.Tooltip()]
+    #         ],[alt.Tooltip()]
+    #     format={[alt.Tooltip()]
+    #         f"{WEIGHT_KEY}": 'Weighted Count',[alt.Tooltip()]
+    #     }[alt.Tooltip()]
+    # )
+
+    chart_args['tooltip'] = tooltip
 
     return (alt.Chart(df)
             .mark_bar()
