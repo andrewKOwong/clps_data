@@ -120,7 +120,7 @@ def order_and_convert_code(
                 survey_vars[s.name].lookup_answer))
 
 
-def temp_process_data(
+def process_data(
         df: pd.DataFrame,
         selected_var: str,
         groupby_var: str | None,
@@ -167,7 +167,7 @@ def style_datatable(
             )
 
 
-def temp_chart(
+def create_chart(
         df: pd.DataFrame,
         survey_vars: SurveyVars,
         selected_var: str,
@@ -329,7 +329,7 @@ def main(debug=False, log_file_path: str | None = None):
     # Groupbys or not groupbys.
     df = df.copy()
 
-    df = temp_process_data(df, selected_var, groupby_var, plot_weighted)
+    df = process_data(df, selected_var, groupby_var, plot_weighted)
     chart_df = df.copy()
 
     # Hack to wrap long labels, for splitting in altair.
@@ -341,7 +341,7 @@ def main(debug=False, log_file_path: str | None = None):
             lambda e: LABEL_SPLIT.join(wrap(e, 20)))
     })
 
-    chart_df = temp_chart(
+    chart_df = create_chart(
         chart_df, svs, selected_var, groupby_var, plot_weighted)
 
     st.altair_chart(chart_df.interactive(),
