@@ -57,8 +57,8 @@ TEXT_INTRO_FP = TEXT_FP / 'intro.md'
 
 
 def create_sidebar():
-    st.sidebar.title('CLPS Data Explorer')
-    st.sidebar.markdown(TEXT_INTRO_FP.read_text())
+    st.sidebar.markdown(TEXT_INTRO_FP.read_text(),
+                        unsafe_allow_html=True)
 
 
 def select_var(

@@ -1,24 +1,44 @@
 
-The [Canadian Legal Problems Survey (CLPS)]
-(https://www.justice.gc.ca/eng/rp-pr/jr/survey-enquete.html)
-is a national survey of Canadians' experiences with the justice o
+<style>
+    .list-block> * {
+        margin-bottom: 0;
+    }
+    .list-block {
+        margin-bottom: 1rem;
+    }
+</style>
+
+# CLPS Data Explorer
+
+The [Canadian Legal Problems Survey
+(CLPS)](https://www.justice.gc.ca/eng/rp-pr/jr/survey-enquete.html)
+is a national survey of Canadians' experiences with the justice
 system, most recently conducted by Statisics Canada in 2021.
 
 The original data is provided by StatsCan via a
-[Public Use Microdata File]
-(https://www150.statcan.gc.ca/n1/pub/35-25-0002/352500022022001-eng.htm).
+[Public Use Microdata File](https://www150.statcan.gc.ca/n1/pub/35-25-0002/352500022022001-eng.htm).
 
+<div class="list-block">
 This app displays plots for each survey variable of the data:
- - Select a survey variable in the first dropdown (type to search).
- - Optionally, filter by region.
- - Data may also be grouped by age or gender.
- - Data is displayed as weighted counts to represent the entire
-population of Canada. To see actual counts of survey respondents,
-uncheck the box.
- - Some survey questions are not presented to respondents based on
-their answers to previous questions. These are termed valid skips.
-To include these, uncheck the box.
+
+ - Select a **survey variable** dropdown (type to search).
+ - Optionally:
+    - Filter by **region**.
+    - Group by a **demographic variable**.
+</div>
 
 
+
+Counts are **weighted** to represent the entire
+population of Canada. Uncheck the box for actual survey respondent counts.
+
+Some survey questions that are not presented to respondent
+based on their answers to previous questions. These are called **"Valid skips"**. Uncheck the box to include these.
+
+
+<div class="list-block">
 Chart Instructions:
-Drag to pan, scroll to zoom.
+
+- Drag to pan, scroll to zoom.
+- Click on the options menu (upper-right corner) to **download** the chart.
+</div>
