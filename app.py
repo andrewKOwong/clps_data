@@ -50,8 +50,6 @@ LABEL_SPLIT = '----'
 Y_FREQ_AXIS_LABEL = 'Count'
 Y_WT_FREQ_AXIS_LABEL = 'Weighted Count'
 
-SAVE_HINT = 'To save the chart, click on dots in the upper-right corner.'
-
 TEXT_FP = Path('text')
 TEXT_INTRO_FP = TEXT_FP / 'intro.md'
 
@@ -335,10 +333,6 @@ def main(debug=False, log_file_path: str | None = None):
     st.altair_chart(chart_df.interactive(),
                     use_container_width=True,
                     )
-
-    # Plot the chart
-    # Hint for the user on how to save the chart
-    st.markdown(SAVE_HINT)
 
     # Display datatable
     df = style_datatable(df)
