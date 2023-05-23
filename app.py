@@ -288,7 +288,7 @@ def main(debug=False, log_file_path: str | None = None):
     skip_container = st.container()
 
     st.divider()
-    make_gap(6)
+    make_gap(3)
 
     # BEGIN: DATA TRANSFORMATIONS
     # Region filtering
