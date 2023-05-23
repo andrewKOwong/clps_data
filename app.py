@@ -151,8 +151,13 @@ def temp_process_data(
 
 
 def style_datatable(
-        df: pd.DataFrame) -> pd.io.formats.style.Styler:
+        df: pd.DataFrame,
+        weighted: bool) -> pd.io.formats.style.Styler:
     return (df
+            .rename(
+                {WEIGHT_KEY:
+                    Y_WT_FREQ_AXIS_LABEL if weighted else Y_FREQ_AXIS_LABEL},
+                axis='columns')
             .style
             # Note: hide(axis='index') doesn't work with streamlit.
             # Streamlit as of >= 1.10 can't hide row indices at all in a
@@ -347,7 +352,7 @@ def main(debug=False, log_file_path: str | None = None):
     make_gap(2)
 
     # Display datatable
-    df = style_datatable(df)
+    df = style_datatable(df, plot_weighted)
     st.dataframe(df, use_container_width=True)
     # Logging for debugging
     if debug:
