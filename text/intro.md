@@ -21,7 +21,7 @@ The original data is provided by StatsCan via a
 <div class="list-block">
 This app displays plots for each survey variable of the data:
 
- - Select a **survey variable** dropdown (type to search).
+ - Select a **survey variable** from the dropdown (type to search).
  - Optionally:
     - Filter by **region**.
     - Group by a **demographic variable**.
