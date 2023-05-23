@@ -239,6 +239,12 @@ def temp_chart(
                             ))
 
 
+def make_gap(n=3):
+    """Make a gap of n `st.text('')` elements."""
+    for _ in range(n):
+        st.text('')
+
+
 @st.cache_data
 def load_data():
     return pd.read_csv(CLPS_COMPRESSED_FP)
@@ -275,6 +281,9 @@ def main(debug=False, log_file_path: str | None = None):
 
     # Space for valid skip removal container.
     skip_container = st.container()
+
+    st.divider()
+    make_gap(6)
 
     # BEGIN: DATA TRANSFORMATIONS
     # Region filtering
@@ -334,9 +343,12 @@ def main(debug=False, log_file_path: str | None = None):
                     use_container_width=True,
                     )
 
+    st.divider()
+    make_gap(2)
+
     # Display datatable
     df = style_datatable(df)
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
     # Logging for debugging
     if debug:
         import logging
