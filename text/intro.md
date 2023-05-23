@@ -32,8 +32,9 @@ This app displays plots for each survey variable of the data:
 Counts are **weighted** to represent the entire
 population of Canada. Uncheck the box for actual survey respondent counts.
 
-Some survey questions that are not presented to respondent
-based on their answers to previous questions. These are called **"Valid skips"**. Uncheck the box to include these.
+Some survey questions are not presented to respondents
+based on their answers to previous questions.
+These are called **"Valid skips"**. Uncheck the box to include these.
 
 
 <div class="list-block">
