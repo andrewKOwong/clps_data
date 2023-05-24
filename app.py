@@ -26,7 +26,9 @@ TEXT_FP = Path('text')
 TEXT_INTRO_FP = TEXT_FP / 'intro.md'
 
 
-def create_sidebar():
+def create_sidebar(intro_fp: str | Path) -> None:
+    if isinstance(intro_fp, str):
+        intro_fp = Path(intro_fp)
     st.sidebar.markdown(TEXT_INTRO_FP.read_text(),
                         unsafe_allow_html=True)
 
@@ -245,14 +247,16 @@ def main(debug=False, log_file_path: str | None = None):
     if debug and log_file_path is None:
         raise ValueError('Must provide log file path if debug is True.')
 
-    create_sidebar()
+    # Load configuation YAML file
     config = load_config()
+    # Load main data and survey vars codebook info
     if config['data']['use_clps_compressed']:
         df = load_data(config['data']['clps_compressed'])
     else:
         df = load_data(config['data']['clps_file'])
-
     svs = load_survey_vars(config['data']['survey_vars_file'])
+
+    create_sidebar(config['text']['intro_file'])
 
     non_selectable = [ID_KEY, WEIGHT_KEY]
     # Load data
