@@ -1,0 +1,8 @@
+data:
+  clps_file: data/clps.csv
+  clps_compressed: data/clps.zip
+  use_clps_compressed: true
+  survey_vars_file: data/survey_vars.json
+
+text:
+  intro_file: text/intro.md

@@ -3,6 +3,7 @@ from pathlib import Path
 from textwrap import wrap
 import streamlit as st
 import altair as alt
+import yaml
 from clps.constants.special_vars_names import ID_KEY
 from clps.constants.special_vars_names import WEIGHT_KEY
 from clps.constants.special_vars_names import GROUPBY_VARS
@@ -14,11 +15,7 @@ from importlib import reload
 reload(svu)
 reload(tfm)
 
-
-DATA_FOLDER = Path('data')
-CLPS_DATA_FP = DATA_FOLDER / 'clps.csv'
-CLPS_COMPRESSED_FP = DATA_FOLDER / 'clps.zip'
-SURVEY_VARS_FP = DATA_FOLDER / 'survey_vars.json'
+CONFIG_FP = Path('config.yaml')
 
 LABEL_SPLIT = '----'
 
@@ -225,9 +222,15 @@ def make_gap(n=3):
         st.text('')
 
 
+def load_config() -> dict:
+    """Load the config file."""
+    with CONFIG_FP.open() as f:
+        return yaml.safe_load(f)
+
+
 @st.cache_data
-def load_data():
-    return pd.read_csv(CLPS_COMPRESSED_FP)
+def load_data(fp: str | Path) -> pd.DataFrame:
+    return pd.read_csv(fp)
 
 
 # REFACTOR: currently uncached. Cacheing is possible with
@@ -243,9 +246,13 @@ def main(debug=False, log_file_path: str | None = None):
         raise ValueError('Must provide log file path if debug is True.')
 
     create_sidebar()
-    df = load_data()
+    config = load_config()
+    if config['data']['use_clps_compressed']:
+        df = load_data(config['data']['clps_compressed'])
+    else:
+        df = load_data(config['data']['clps_file'])
 
-    svs = load_survey_vars(SURVEY_VARS_FP)
+    svs = load_survey_vars(config['data']['survey_vars_file'])
 
     non_selectable = [ID_KEY, WEIGHT_KEY]
     # Load data
