@@ -80,7 +80,14 @@ def select_groupby_var(selected_var_to_exclude: str) -> str:
 
 
 def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
-    """From int column, create an ordered categorical dtype."""
+    """From an integer-containing column, create an ordered categorical dtype.
+
+    Args:
+        s: Series corresponding to a survey variable, with integer codes.
+
+    Returns:
+        Ordered categorical dtype, with categories in ascending integer order.
+        """
     return pd.CategoricalDtype(
         categories=s.sort_values().unique(),
         ordered=True)
@@ -89,11 +96,55 @@ def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
 def order_and_convert_code(
         s: pd.Series,
         survey_vars: SurveyVars) -> pd.Series:
-    """Converts a series of codes to text labels, as ordered categorical."""
+    """Converts a series of codes to text labels, as ordered categorical.
+
+    Used as a helper func for `convert_to_categorical`.
+
+    Args:
+        s: Series corresponding to a survey variable, with integer codes.
+        survey_vars: SurveyVars object, with survey variable metadata.
+
+    Returns:
+        Series with text labels as an ordered categorical. Order is determined
+        by the order of the integers, which corresponds to the order found
+        in the survey variable metadata.
+    """
+    # Change ints to ordered categorical to preserve order,
+    # then convert to text labels.
+    # Mapping automatically converts categorical info.
     return (s
             .astype(create_ordered_dtype(s))
             .cat.rename_categories(
                 survey_vars[s.name].lookup_answer))
+
+
+def convert_to_categorical(
+        df: pd.DataFrame,
+        svs: SurveyVars,
+        selected_var: str,
+        groupby_var: str | None):
+    """Converted survey variable columns to ordered categorical dtype.
+
+    Args:
+        df: Dataframe with survey variable columns. These columns are still in
+            integer code form.
+        svs: SurveyVars object, with survey variable metadata.
+        selected_var: Name of the survey variable column to convert.
+        groupby_var: Name of the groupby column to convert, if any.
+
+    Returns:
+        Dataframe with survey variable columns converted to ordered categorical
+        dtype, as text labels. Order is determined by the integer order, which
+        corresponds to the order found in the survey variable metadata.
+    """
+    df = df.assign(**{
+        selected_var: lambda d: (
+            order_and_convert_code(d[selected_var], svs))})
+    if groupby_var is not None:
+        df = df.assign(**{
+            groupby_var: lambda d: (
+                order_and_convert_code(d[groupby_var], svs))})
+    return df
 
 
 def process_data(
@@ -260,42 +311,33 @@ def main(debug=False, log_file_path: str | None = None):
 
     create_sidebar(config['text']['intro_file'])
 
+    # BEGIN: DATA SELECTION WIDGETS
     # Choose a variable for display
     selected_var = select_var(df, svs, NON_SELECTABLE)
     # Choose region to filter
     region = select_region(svs)
     # Choose variable for bar chart groupings
     groupby_var = select_groupby_var(selected_var)
-
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
-
     # Space for valid skip removal container.
     skip_container = st.container()
 
     st.divider()
     make_gap(3)
+    # END: DATA SELECTION WIDGETS
 
     # BEGIN: DATA TRANSFORMATIONS
-    # Region filtering
+    # Filter region rows
     if region is not None:
         df = tfm.filter_by_region(df, region)
-    # Groupby filtering
+    # Filter survey var columns
     if groupby_var is None:
         df = df[[selected_var, WEIGHT_KEY]]
     else:
         df = df[[selected_var, groupby_var, WEIGHT_KEY]]
 
-    # Change ints to ordered categorical to preserve order,
-    # then convert to text labels.
-    # Mapping automatically converts categorical info.
-    df = df.assign(**{
-        selected_var: lambda d: (
-            order_and_convert_code(d[selected_var], svs))})
-    if groupby_var is not None:
-        df = df.assign(**{
-            groupby_var: lambda d: (
-                order_and_convert_code(d[groupby_var], svs))})
+    df = convert_to_categorical(df, svs, selected_var, groupby_var)
 
     # Check if data contains "Valid skip" codes.
     # If so, add checkbox to give the option to remove them.
