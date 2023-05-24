@@ -4,8 +4,7 @@ from textwrap import wrap
 import streamlit as st
 import altair as alt
 import yaml
-from clps.constants.special_vars_names import ID_KEY
-from clps.constants.special_vars_names import WEIGHT_KEY
+from clps.constants.special_vars_names import ID_KEY, WEIGHT_KEY, REGION_KEY
 from clps.constants.special_vars_names import GROUPBY_VARS
 from clps.constants.special_vars_names import VALID_SKIP
 import clps.survey_vars_utils as svu
@@ -47,7 +46,7 @@ def select_var(
     )
 
 
-def select_region(survey_vars: SurveyVars) -> str:
+def select_region(survey_vars: SurveyVars) -> int:
     NATIONAL = 'National'
     regions = survey_vars.get_region()
     opts = [None] + regions.codes
@@ -77,6 +76,21 @@ def select_groupby_var(selected_var_to_exclude: str) -> str:
         label='Groupby:',
         options=options,
         format_func=lambda k: 'None' if k is None else GROUPBY_VARS[k])
+
+
+def filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
+    """Filter a dataframe by a region code.
+
+    Args:
+        df: Dataframe to filter. Region column must be ints.
+        region: Region code to filter by. If `None`, no filtering is done.
+
+    Returns:
+        Filtered dataframe.
+    """
+    if region is not None:
+        df = df[df[REGION_KEY] == region].copy()
+    return df
 
 
 def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
@@ -378,8 +392,7 @@ def main(debug=False, log_file_path: str | None = None):
 
     # BEGIN: DATA TRANSFORMATIONS
     # Filter region rows
-    if region is not None:
-        df = tfm.filter_by_region(df, region)
+    df = filter_by_region(df, region)
     # Filter survey var columns
     if groupby_var is None:
         df = df[[selected_var, WEIGHT_KEY]]
