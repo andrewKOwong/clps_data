@@ -259,6 +259,36 @@ def process_data(
             )
 
 
+def transform_data(
+        df: pd.DataFrame,
+        survey_vars: SurveyVars,
+        region: int,
+        selected_var: str,
+        groupby_var: str | None,
+        skip_container: st.delta_generator.DeltaGenerator,
+        weighted: bool) -> pd.DataFrame:
+    # BEGIN: DATA TRANSFORMATIONS
+    # Filter region rows
+    df = filter_by_region(df, region)
+    # Filter survey var columns
+    df = filter_by_selected_and_groupby(df, selected_var, groupby_var)
+
+    df = convert_to_categorical(df, survey_vars, selected_var, groupby_var)
+
+    # Check if data contains "Valid skip" codes.
+    # If so, add checkbox to give the option to remove them.
+    remove_valid_skips = deploy_valid_skip_checkbox(
+        df, selected_var, skip_container
+    )
+
+    # Remove valid skips if checkbox is checked. Note, if there are no
+    # valid skips, remove_valid_skips will be None.
+    df = filter_valid_skips(df, selected_var, remove_valid_skips)
+    df = process_data(df, selected_var, groupby_var, weighted)
+    # END: DATA TRANSFORMATIONS
+    return df
+
+
 def style_datatable(
         df: pd.DataFrame,
         weighted: bool) -> pd.io.formats.style.Styler:
@@ -409,31 +439,16 @@ def main(debug=False, log_file_path: str | None = None):
     make_gap(3)
     # END: DATA SELECTION WIDGETS AND UI
 
-    # BEGIN: DATA TRANSFORMATIONS
-    # Filter region rows
-    df = filter_by_region(df, region)
-    # Filter survey var columns
-    df = filter_by_selected_and_groupby(df, selected_var, groupby_var)
+    # Transform data
+    df = transform_data(
+        df=df,
+        survey_vars=svs,
+        region=region,
+        selected_var=selected_var,
+        groupby_var=groupby_var,
+        skip_container=skip_container,
+        weighted=plot_weighted)
 
-    df = convert_to_categorical(df, svs, selected_var, groupby_var)
-
-    # Check if data contains "Valid skip" codes.
-    # If so, add checkbox to give the option to remove them.
-    remove_valid_skips = deploy_valid_skip_checkbox(
-        df, selected_var, skip_container
-    )
-
-    # Remove valid skips if checkbox is checked. Note, if there are no
-    # valid skips, remove_valid_skips will be None.
-    df = filter_valid_skips(df, selected_var, remove_valid_skips)
-    # END: DATA TRANSFORMATIONS
-
-    # TODO Testing data tables
-    # Need to do counts, or not counts.
-    # Groupbys or not groupbys.
-    df = df.copy()
-
-    df = process_data(df, selected_var, groupby_var, plot_weighted)
     chart_df = df.copy()
 
     # Hack to wrap long labels, for splitting in altair.
