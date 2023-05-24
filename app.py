@@ -93,6 +93,25 @@ def filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
     return df
 
 
+def filter_by_selected_and_groupby(
+        df: pd.DataFrame,
+        selected_var: str,
+        groupby_var: str | None) -> pd.DataFrame:
+    """Filter for the selected variable of interest, the groupby variable, and
+    the respondent weights.
+
+    Args:
+        df: Dataframe with survey variables.
+        selected_var: Name of the survey variable to filter for.
+        groupby_var: Name of the groupby variable to filter for.
+    """
+    if groupby_var is None:
+        df = df[[selected_var, WEIGHT_KEY]]
+    else:
+        df = df[[selected_var, groupby_var, WEIGHT_KEY]]
+    return df
+
+
 def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
     """From an integer-containing column, create an ordered categorical dtype.
 
@@ -394,10 +413,7 @@ def main(debug=False, log_file_path: str | None = None):
     # Filter region rows
     df = filter_by_region(df, region)
     # Filter survey var columns
-    if groupby_var is None:
-        df = df[[selected_var, WEIGHT_KEY]]
-    else:
-        df = df[[selected_var, groupby_var, WEIGHT_KEY]]
+    df = filter_by_selected_and_groupby(df, selected_var, groupby_var)
 
     df = convert_to_categorical(df, svs, selected_var, groupby_var)
 
