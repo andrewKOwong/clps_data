@@ -147,6 +147,55 @@ def convert_to_categorical(
     return df
 
 
+def deploy_valid_skip_checkbox(
+        df: pd.DataFrame,
+        selected_var: str,
+        skip_container: st.delta_generator.DeltaGenerator) -> bool | None:
+    """Deploy checkbox to remove valid skips from the data.
+
+    Args:
+        df: Dataframe with survey variable columns, converted to str ordered
+        categorical dtype.
+        selected_var: Name of the survey variable column of interest.
+        skip_container: Pre-existing container to hold the checkbox, i.e.
+            from `st.container()`.
+
+    Returns:
+       If the dataframe contains valid skips, returns the checkbox value.
+       Otherwise, returns `None`.
+    """
+    if VALID_SKIP in df[selected_var].cat.categories:
+        with skip_container:
+            return st.checkbox('Remove valid skips', value=True)
+    else:
+        return None
+
+
+def filter_valid_skips(
+        df: pd.DataFrame,
+        selected_var: str,
+        remove_valid_skips: bool) -> pd.DataFrame:
+    """Filter out valid skips from the data.
+
+    If remove_valid_skips is `False` or `None`, this filter does nothing.
+
+    Args:
+        df: Dataframe with survey variable columns, converted to str ordered
+        categorical dtype.
+        selected_var: Name of the survey variable column of interest.
+        remove_valid_skips: Whether to remove valid skips from the data.
+
+    Returns:
+    """
+    if remove_valid_skips:
+        df = df.query(f"{selected_var} != '{VALID_SKIP}'")
+        df = df.assign(**{
+            selected_var:
+                lambda d: d[selected_var].cat.remove_unused_categories()
+        })
+    return df
+
+
 def process_data(
         df: pd.DataFrame,
         selected_var: str,
@@ -341,15 +390,13 @@ def main(debug=False, log_file_path: str | None = None):
 
     # Check if data contains "Valid skip" codes.
     # If so, add checkbox to give the option to remove them.
-    if VALID_SKIP in df[selected_var].cat.categories:
-        with skip_container:
-            remove_valid_skips = st.checkbox('Remove valid skips', value=True)
-        if remove_valid_skips:
-            df = df.query(f"{selected_var} != '{VALID_SKIP}'")
-            df = df.assign(**{
-                selected_var:
-                    lambda d: d[selected_var].cat.remove_unused_categories()
-            })
+    remove_valid_skips = deploy_valid_skip_checkbox(
+        df, selected_var, skip_container
+    )
+
+    # Remove valid skips if checkbox is checked. Note, if there are no
+    # valid skips, remove_valid_skips will be None.
+    df = filter_valid_skips(df, selected_var, remove_valid_skips)
     # END: DATA TRANSFORMATIONS
 
     # TODO Testing data tables
