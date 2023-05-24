@@ -24,6 +24,8 @@ Y_WT_FREQ_AXIS_LABEL = 'Weighted Count'
 
 TEXT_FP = Path('text')
 TEXT_INTRO_FP = TEXT_FP / 'intro.md'
+# These are survey variables that shouldn't be displayed
+NON_SELECTABLE = [ID_KEY, WEIGHT_KEY]
 
 
 def create_sidebar(intro_fp: str | Path) -> None:
@@ -258,10 +260,8 @@ def main(debug=False, log_file_path: str | None = None):
 
     create_sidebar(config['text']['intro_file'])
 
-    non_selectable = [ID_KEY, WEIGHT_KEY]
-    # Load data
     # Choose a variable for display
-    selected_var = select_var(df, svs, non_selectable)
+    selected_var = select_var(df, svs, NON_SELECTABLE)
     # Choose region to filter
     region = select_region(svs)
     # Choose variable for bar chart groupings
