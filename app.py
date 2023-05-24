@@ -391,9 +391,9 @@ def main(debug=False, log_file_path: str | None = None):
         df = load_data(config['data']['clps_file'])
     svs = load_survey_vars(config['data']['survey_vars_file'])
 
+    # BEGIN: DATA SELECTION WIDGETS AND UI
+    # Side bar with explanations
     create_sidebar(config['text']['intro_file'])
-
-    # BEGIN: DATA SELECTION WIDGETS
     # Choose a variable for display
     selected_var = select_var(df, svs, NON_SELECTABLE)
     # Choose region to filter
@@ -404,10 +404,10 @@ def main(debug=False, log_file_path: str | None = None):
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
     # Space for valid skip removal container.
     skip_container = st.container()
-
+    # Spacing
     st.divider()
     make_gap(3)
-    # END: DATA SELECTION WIDGETS
+    # END: DATA SELECTION WIDGETS AND UI
 
     # BEGIN: DATA TRANSFORMATIONS
     # Filter region rows
