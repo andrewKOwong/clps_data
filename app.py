@@ -229,29 +229,30 @@ def filter_valid_skips(
     return df
 
 
-def process_data(
+def groupby_and_aggregate(
         df: pd.DataFrame,
         selected_var: str,
         groupby_var: str | None,
         weighted: bool,
         ) -> pd.DataFrame:
-    df = df.copy()
-
+    """Groupby and aggregate the dataframe."""
+    # Assemble grouping variables
     groupby_list = [selected_var]
     if groupby_var is not None:
         groupby_list.append(groupby_var)
+    # Groupby and aggregate
+    # Count the weight column to get the number of actual respondents
+    # otherwise sum up the weights.
     grpby = df.groupby(groupby_list)[[WEIGHT_KEY]]  # groupby object
-
     if weighted:
         out = grpby.sum()
     else:
         out = grpby.count()
-
-    # # Bug with streamlit? Where categorical indexes display with a warning
-    # # That "The value is not part of the allowed options" along with a
-    # # yellow exclamtion mark. This is a workaround.
-    # out.index = out.index.astype('object')
-
+    # Note, streamlit appears to have issue with categorical indexes (possibly)
+    # after groupbys, displaying a warning that "The value is not part of the
+    # allowed options" along with a yellow exclamtion mark.
+    # Resetting the index to get a clean dataframe here, then worry about
+    # styling during display.
     return (out
             .round()
             .astype(int)
@@ -284,7 +285,7 @@ def transform_data(
     # Remove valid skips if checkbox is checked. Note, if there are no
     # valid skips, remove_valid_skips will be None.
     df = filter_valid_skips(df, selected_var, remove_valid_skips)
-    df = process_data(df, selected_var, groupby_var, weighted)
+    df = groupby_and_aggregate(df, selected_var, groupby_var, weighted)
     # END: DATA TRANSFORMATIONS
     return df
 
