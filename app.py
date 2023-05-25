@@ -28,17 +28,36 @@ TEXT_INTRO_FP = TEXT_FP / 'intro.md'
 NON_SELECTABLE = [ID_KEY, WEIGHT_KEY]
 
 
-def create_sidebar(intro_fp: str | Path) -> None:
+def deploy_sidebar(intro_fp: str | Path) -> None:
+    """Create the sidebar.
+
+    Args:
+        intro_fp: File path to the markdown file containing the introduction
+            text.
+    """
     if isinstance(intro_fp, str):
         intro_fp = Path(intro_fp)
     st.sidebar.markdown(TEXT_INTRO_FP.read_text(),
                         unsafe_allow_html=True)
 
 
-def select_var(
+def deploy_survey_var_selectbox(
         raw_df: pd.DataFrame,
         survey_vars: SurveyVars,
         exclude: list = None) -> str:
+    """Deploy a selectbox to choose a survey variable.
+
+    Survey variables are formatted to include the variable name and the
+    concept text, e.g. 'PHHP01P - Number of people in household'.
+
+    Args:
+        raw_df: CLPS raw dataframe.
+        survey_vars: SurveyVars object, containing variable metadata.
+        exclude: List of variables to exclude from the selectbox.
+
+    Returns:
+        Name (str) of the selected variable, e.g. 'PUMFID'.
+    """
     selectable = raw_df.columns[~raw_df.columns.isin(exclude)]
     return st.selectbox(
         label='Variable',
@@ -47,7 +66,8 @@ def select_var(
     )
 
 
-def select_region(survey_vars: SurveyVars) -> int:
+def deploy_region_selectbox(survey_vars: SurveyVars) -> int | None:
+    """Deploy a selectbox to filter the data by region."""
     NATIONAL = 'National'
     regions = survey_vars.get_region()
     opts = [None] + regions.codes
@@ -60,12 +80,12 @@ def select_region(survey_vars: SurveyVars) -> int:
     )
 
 
-def select_groupby_var(selected_var_to_exclude: str) -> str:
+def deploy_groupby_var_selectbox(selected_var_to_exclude: str) -> str | None:
     """Select a variable to groupby, if any.
 
     Args:
         selected_var_to_exclude: If the variable selected for display is one of
-            the avaiable groupby variables, it is removed as an option.
+            the available groupby variables, it is removed as an option.
 
     Returns:
         Str code for variable to groupby, or `None`.
@@ -236,13 +256,13 @@ def main(debug=False, log_file_path: str | None = None):
 
     # BEGIN: DATA SELECTION WIDGETS AND UI
     # Side bar with explanations
-    create_sidebar(config['text']['intro_file'])
+    deploy_sidebar(config['text']['intro_file'])
     # Choose a variable for display
-    selected_var = select_var(df, svs, NON_SELECTABLE)
+    selected_var = deploy_survey_var_selectbox(df, svs, NON_SELECTABLE)
     # Choose region to filter
-    region = select_region(svs)
+    region = deploy_region_selectbox(svs)
     # Choose variable for bar chart groupings
-    groupby_var = select_groupby_var(selected_var)
+    groupby_var = deploy_groupby_var_selectbox(selected_var)
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
     remove_valid_skips = deploy_valid_skips_checkbox(svs, selected_var)
