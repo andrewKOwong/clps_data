@@ -7,13 +7,18 @@ import yaml
 from clps.constants.special_vars_names import ID_KEY, WEIGHT_KEY
 from clps.constants.special_vars_names import GROUPBY_VARS
 import clps.survey_vars_utils as svu
+import clps.transform as transform
 from clps.survey_vars_utils import SurveyVars
-import clps.transform as tfm
-from importlib import reload
-
 from clps.transform import transform_data
+# Hot reloading of modules doesn't seem to work, although apparently it should
+# be solved.
+# Reload the modules during local development to avoid restarting the server.
+# Note: for `from` import, have to import the main module, then the do
+# from import, the reload the main module.
+from importlib import reload
 reload(svu)
-reload(tfm)
+reload(transform)
+
 
 CONFIG_FP = Path('config.yaml')
 
