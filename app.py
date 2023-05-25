@@ -26,6 +26,8 @@ TEXT_FP = Path('text')
 TEXT_INTRO_FP = TEXT_FP / 'intro.md'
 # These are survey variables that shouldn't be displayed
 NON_SELECTABLE = [ID_KEY, WEIGHT_KEY]
+# This text is displayed when no region is selected for the region selectbox
+NATIONAL = 'National'
 
 
 def deploy_sidebar(intro_fp: str | Path) -> None:
@@ -69,7 +71,6 @@ def deploy_survey_var_selectbox(
 
 def deploy_region_selectbox(survey_vars: SurveyVars) -> int | None:
     """Deploy a selectbox to filter the data by region."""
-    NATIONAL = 'National'
     regions = survey_vars.get_region()
     opts = [None] + regions.codes
     return st.selectbox(
