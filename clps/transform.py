@@ -4,7 +4,7 @@ from clps.constants.special_vars_names import (
 from clps.survey_vars_utils import SurveyVars
 
 
-def filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
+def _filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
     """Filter CLPS raw dataframe by a region code.
 
     Args:
@@ -19,7 +19,7 @@ def filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
     return df
 
 
-def filter_by_selected_and_groupby(
+def _filter_by_selected_and_groupby(
         df: pd.DataFrame,
         selected_var: str,
         groupby_var: str | None) -> pd.DataFrame:
@@ -42,7 +42,7 @@ def filter_by_selected_and_groupby(
     return df
 
 
-def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
+def _create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
     """From an integer-containing column, create an ordered categorical dtype.
 
     Args:
@@ -56,7 +56,7 @@ def create_ordered_dtype(s: pd.Series) -> pd.CategoricalDtype:
         ordered=True)
 
 
-def order_and_convert_code(
+def _order_and_convert_code(
         s: pd.Series,
         survey_vars: SurveyVars) -> pd.Series:
     """Converts a series of codes to text labels, as ordered categorical.
@@ -76,12 +76,12 @@ def order_and_convert_code(
     # then convert to text labels.
     # Renaming categories automatically converts category names.
     return (s
-            .astype(create_ordered_dtype(s))
+            .astype(_create_ordered_dtype(s))
             .cat.rename_categories(
                 survey_vars[s.name].lookup_answer))
 
 
-def convert_to_categorical(
+def _convert_to_categorical(
         df: pd.DataFrame,
         svs: SurveyVars,
         selected_var: str,
@@ -102,15 +102,15 @@ def convert_to_categorical(
     """
     df = df.assign(**{
         selected_var: lambda d: (
-            order_and_convert_code(d[selected_var], svs))})
+            _order_and_convert_code(d[selected_var], svs))})
     if groupby_var is not None:
         df = df.assign(**{
             groupby_var: lambda d: (
-                order_and_convert_code(d[groupby_var], svs))})
+                _order_and_convert_code(d[groupby_var], svs))})
     return df
 
 
-def filter_valid_skips(
+def _filter_valid_skips(
         df: pd.DataFrame,
         selected_var: str,
         remove_valid_skips: bool) -> pd.DataFrame:
@@ -136,7 +136,7 @@ def filter_valid_skips(
     return df
 
 
-def groupby_and_aggregate(
+def _groupby_and_aggregate(
         df: pd.DataFrame,
         selected_var: str,
         groupby_var: str | None,
@@ -200,13 +200,13 @@ def transform_data(
             representing the number of respondents directly.
     """
     # Filter region rows.
-    df = filter_by_region(df, region)
+    df = _filter_by_region(df, region)
     # Filter survey var columns.
-    df = filter_by_selected_and_groupby(df, selected_var, groupby_var)
+    df = _filter_by_selected_and_groupby(df, selected_var, groupby_var)
     # Replace integer codes with text labels, as ordered categorical dtype.
-    df = convert_to_categorical(df, survey_vars, selected_var, groupby_var)
+    df = _convert_to_categorical(df, survey_vars, selected_var, groupby_var)
     # Filter out valid skips
-    df = filter_valid_skips(df, selected_var, remove_valid_skips)
+    df = _filter_valid_skips(df, selected_var, remove_valid_skips)
     # Groupby and aggregate
-    df = groupby_and_aggregate(df, selected_var, groupby_var, weighted)
+    df = _groupby_and_aggregate(df, selected_var, groupby_var, weighted)
     return df
