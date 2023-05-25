@@ -165,6 +165,20 @@ class _SurveyVar:
             self, code: int | str, suppress_missing: bool = True) -> float:
         return float(self._lookup_by_code(code, 'percent', suppress_missing))
 
+    def has_valid_skips(self) -> bool:
+        """True if the survey variable has a 'Valid skip' category.
+
+        False if it does not have a 'Valid skip' category, or has no
+        answer categories at all.
+        """
+        # Check if answer categories exists
+        try:
+            self.ans_cats
+        except AttributeError:
+            return False
+        # Check for valid skips
+        return N.VALID_SKIP in self.ans_cats
+
     # Read only data
     @property
     def raw(self):

@@ -79,6 +79,29 @@ def select_groupby_var(selected_var_to_exclude: str) -> str:
         format_func=lambda k: 'None' if k is None else GROUPBY_VARS[k])
 
 
+def deploy_valid_skips_checkbox(
+        survey_vars: SurveyVars,
+        selected_var: str) -> bool:
+    """Deploy a checkbox to remove valid skips from the data.
+
+    Checks SurveyVars object to see if the answer categories has a valid skip
+    category. I.e. does not directly interrogate the main data.
+
+    Args:
+        survey_vars: SurveyVars object, containing variable metadata.
+        selected_var: The variable selected for display.
+
+    Returns:
+        Bool, whether to remove valid skips from the data. False if the
+        selected survey variable has no valid skips or no answer section."""
+    if survey_vars[selected_var].has_valid_skips():
+        # Deploy the checkbox
+        remove_valid_skips = st.checkbox('Remove valid skips', value=True)
+    else:
+        remove_valid_skips = False
+    return remove_valid_skips
+
+
 def style_datatable(
         df: pd.DataFrame,
         weighted: bool) -> pd.io.formats.style.Styler:
@@ -222,8 +245,7 @@ def main(debug=False, log_file_path: str | None = None):
     groupby_var = select_groupby_var(selected_var)
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
-    # Space for valid skip removal container.
-    skip_container = st.container()
+    remove_valid_skips = deploy_valid_skips_checkbox(svs, selected_var)
     # Spacing
     st.divider()
     make_gap(3)
@@ -236,7 +258,7 @@ def main(debug=False, log_file_path: str | None = None):
         region=region,
         selected_var=selected_var,
         groupby_var=groupby_var,
-        skip_container=skip_container,
+        remove_valid_skips=remove_valid_skips,
         weighted=plot_weighted)
 
     chart_df = df.copy()

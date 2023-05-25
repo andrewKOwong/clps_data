@@ -1,5 +1,4 @@
 import pandas as pd
-import streamlit as st
 from clps.constants.special_vars_names import (
     REGION_KEY, VALID_SKIP, WEIGHT_KEY)
 from clps.survey_vars_utils import SurveyVars
@@ -150,35 +149,13 @@ def filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
     return df
 
 
-def deploy_valid_skip_checkbox(
-        df: pd.DataFrame,
-        selected_var: str,
-        skip_container: st.delta_generator.DeltaGenerator) -> bool | None:
-    """Deploy checkbox to remove valid skips from the data.
-    Args:
-        df: Dataframe with survey variable columns, converted to str ordered
-        categorical dtype.
-        selected_var: Name of the survey variable column of interest.
-        skip_container: Pre-existing container to hold the checkbox, i.e.
-            from `st.container()`.
-    Returns:
-       If the dataframe contains valid skips, returns the checkbox value.
-       Otherwise, returns `None`.
-    """
-    if VALID_SKIP in df[selected_var].cat.categories:
-        with skip_container:
-            return st.checkbox('Remove valid skips', value=True)
-    else:
-        return None
-
-
 def transform_data(
         df: pd.DataFrame,
         survey_vars: SurveyVars,
         region: int,
         selected_var: str,
         groupby_var: str | None,
-        skip_container: st.delta_generator.DeltaGenerator,
+        remove_valid_skips: bool | None,
         weighted: bool) -> pd.DataFrame:
     # BEGIN: DATA TRANSFORMATIONS
     # Filter region rows
@@ -188,14 +165,6 @@ def transform_data(
 
     df = convert_to_categorical(df, survey_vars, selected_var, groupby_var)
 
-    # Check if data contains "Valid skip" codes.
-    # If so, add checkbox to give the option to remove them.
-    remove_valid_skips = deploy_valid_skip_checkbox(
-        df, selected_var, skip_container
-    )
-
-    # Remove valid skips if checkbox is checked. Note, if there are no
-    # valid skips, remove_valid_skips will be None.
     df = filter_valid_skips(df, selected_var, remove_valid_skips)
     df = groupby_and_aggregate(df, selected_var, groupby_var, weighted)
     # END: DATA TRANSFORMATIONS
