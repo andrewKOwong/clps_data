@@ -291,6 +291,15 @@ class SurveyVars:
         """Get a survey variable by its key."""
         return self._survey_vars[key]
 
+    def get_all_var_names(self) -> list[str]:
+        """Get all survey variable names/keys.
+
+        Returns:
+            A list of all survey variable names, in order of appearance in the
+            survey variables JSON file.
+        """
+        return list(self._survey_vars.keys())
+
     def get_region(self):
         """Get a region by its key."""
         return self._survey_vars[self.REGION_KEY]
