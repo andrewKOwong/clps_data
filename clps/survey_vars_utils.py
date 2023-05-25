@@ -12,7 +12,6 @@ class _SurveyVar:
 
     Extensible to add more getters.
     """
-    PROBCNTP_AGGREGATE_CODE = N.PROBCNTP_AGGREGATE_CODE
 
     def __init__(self, survey_var: dict, attempt_int_conversion: bool = True):
         """
@@ -40,7 +39,7 @@ class _SurveyVar:
         except KeyError:
             pass
         else:
-            if self._name == N.PROBCNTP:
+            if self._name == N.PROBCNTP_KEY:
                 self._handle_PROBCNTP_answer_section()
                 # Don't generate freq etc. lookups
                 self._generate_ans_lookup_by_code()
@@ -72,7 +71,7 @@ class _SurveyVar:
         # Copy out the aggregate codes
         codes = self._aggregate_codes.copy()
         # Position of the 01-16 str code
-        sum_idx = codes.index(self.PROBCNTP_AGGREGATE_CODE)
+        sum_idx = codes.index(N.PROBCNTP_AGGREGATE_CODE)
         # Remove the aggregate code
         agg_code = codes.pop(sum_idx)
         # This might as well be hard coded, but it's the 1 and 16
@@ -266,10 +265,6 @@ class SurveyVars:
 
     I.e. from survey_vars.json extracted from the CLPS codebook.
     """
-    REGION_KEY = N.REGION
-    PROBCNTP_AGGREGATE_CODE = N.PROBCNTP_AGGREGATE_CODE
-    PRIP10_YES_CODE = N.PRIP10_YES_CODE
-    PRIP10_KEYS = N.PROBCNTP_COMPONENTS
 
     def __init__(self, survey_vars_fp: str | Path):
         """
@@ -302,7 +297,7 @@ class SurveyVars:
 
     def get_region(self):
         """Get a region by its key."""
-        return self._survey_vars[self.REGION_KEY]
+        return self._survey_vars[N.REGION_KEY]
 
 
 def load_survey_vars(fp: str | Path) -> list:
