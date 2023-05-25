@@ -42,7 +42,6 @@ def deploy_sidebar(intro_fp: str | Path) -> None:
 
 
 def deploy_survey_var_selectbox(
-        raw_df: pd.DataFrame,
         survey_vars: SurveyVars,
         exclude: list = None) -> str:
     """Deploy a selectbox to choose a survey variable.
@@ -58,7 +57,9 @@ def deploy_survey_var_selectbox(
     Returns:
         Name (str) of the selected variable, e.g. 'PUMFID'.
     """
-    selectable = raw_df.columns[~raw_df.columns.isin(exclude)]
+    selectable = survey_vars.get_all_var_names()
+    selectable = [x for x in selectable if x not in exclude]
+
     return st.selectbox(
         label='Variable',
         options=selectable,
@@ -258,7 +259,7 @@ def main(debug=False, log_file_path: str | None = None):
     # Side bar with explanations
     deploy_sidebar(config['text']['intro_file'])
     # Choose a variable for display
-    selected_var = deploy_survey_var_selectbox(df, svs, NON_SELECTABLE)
+    selected_var = deploy_survey_var_selectbox(svs, NON_SELECTABLE)
     # Choose region to filter
     region = deploy_region_selectbox(svs)
     # Choose variable for bar chart groupings
