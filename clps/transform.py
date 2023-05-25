@@ -4,56 +4,34 @@ from clps.constants.special_vars_names import (
 from clps.survey_vars_utils import SurveyVars
 
 
-def groupby_and_aggregate(
-        df: pd.DataFrame,
-        selected_var: str,
-        groupby_var: str | None,
-        weighted: bool,
-        ) -> pd.DataFrame:
-    """Groupby and aggregate the dataframe."""
-    # Assemble grouping variables
-    groupby_list = [selected_var]
-    if groupby_var is not None:
-        groupby_list.append(groupby_var)
-    # Groupby and aggregate
-    # Count the weight column to get the number of actual respondents
-    # otherwise sum up the weights.
-    grpby = df.groupby(groupby_list)[[WEIGHT_KEY]]  # groupby object
-    if weighted:
-        out = grpby.sum()
-    else:
-        out = grpby.count()
-    # Note, streamlit appears to have issue with categorical indexes (possibly)
-    # after groupbys, displaying a warning that "The value is not part of the
-    # allowed options" along with a yellow exclamtion mark.
-    # Resetting the index to get a clean dataframe here, then worry about
-    # styling during display.
-    return (out
-            .round()
-            .astype(int)
-            .reset_index()
-            )
-
-
-def filter_valid_skips(
-        df: pd.DataFrame,
-        selected_var: str,
-        remove_valid_skips: bool) -> pd.DataFrame:
-    """Filter out valid skips from the data.
-    If remove_valid_skips is `False` or `None`, this filter does nothing.
+def filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
+    """Filter a dataframe by a region code.
     Args:
-        df: Dataframe with survey variable columns, converted to str ordered
-        categorical dtype.
-        selected_var: Name of the survey variable column of interest.
-        remove_valid_skips: Whether to remove valid skips from the data.
+        df: Dataframe to filter. Region column must be ints.
+        region: Region code to filter by. If `None`, no filtering is done.
     Returns:
+        Filtered dataframe.
     """
-    if remove_valid_skips:
-        df = df.query(f"{selected_var} != '{VALID_SKIP}'")
-        df = df.assign(**{
-            selected_var:
-                lambda d: d[selected_var].cat.remove_unused_categories()
-        })
+    if region is not None:
+        df = df[df[REGION_KEY] == region].copy()
+    return df
+
+
+def filter_by_selected_and_groupby(
+        df: pd.DataFrame,
+        selected_var: str,
+        groupby_var: str | None) -> pd.DataFrame:
+    """Filter for the selected variable of interest, the groupby variable, and
+    the respondent weights.
+    Args:
+        df: Dataframe with survey variables.
+        selected_var: Name of the survey variable to filter for.
+        groupby_var: Name of the groupby variable to filter for.
+    """
+    if groupby_var is None:
+        df = df[[selected_var, WEIGHT_KEY]]
+    else:
+        df = df[[selected_var, groupby_var, WEIGHT_KEY]]
     return df
 
 
@@ -118,35 +96,57 @@ def convert_to_categorical(
     return df
 
 
-def filter_by_selected_and_groupby(
+def filter_valid_skips(
         df: pd.DataFrame,
         selected_var: str,
-        groupby_var: str | None) -> pd.DataFrame:
-    """Filter for the selected variable of interest, the groupby variable, and
-    the respondent weights.
+        remove_valid_skips: bool) -> pd.DataFrame:
+    """Filter out valid skips from the data.
+    If remove_valid_skips is `False` or `None`, this filter does nothing.
     Args:
-        df: Dataframe with survey variables.
-        selected_var: Name of the survey variable to filter for.
-        groupby_var: Name of the groupby variable to filter for.
-    """
-    if groupby_var is None:
-        df = df[[selected_var, WEIGHT_KEY]]
-    else:
-        df = df[[selected_var, groupby_var, WEIGHT_KEY]]
-    return df
-
-
-def filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
-    """Filter a dataframe by a region code.
-    Args:
-        df: Dataframe to filter. Region column must be ints.
-        region: Region code to filter by. If `None`, no filtering is done.
+        df: Dataframe with survey variable columns, converted to str ordered
+        categorical dtype.
+        selected_var: Name of the survey variable column of interest.
+        remove_valid_skips: Whether to remove valid skips from the data.
     Returns:
-        Filtered dataframe.
     """
-    if region is not None:
-        df = df[df[REGION_KEY] == region].copy()
+    if remove_valid_skips:
+        df = df.query(f"{selected_var} != '{VALID_SKIP}'")
+        df = df.assign(**{
+            selected_var:
+                lambda d: d[selected_var].cat.remove_unused_categories()
+        })
     return df
+
+
+def groupby_and_aggregate(
+        df: pd.DataFrame,
+        selected_var: str,
+        groupby_var: str | None,
+        weighted: bool,
+        ) -> pd.DataFrame:
+    """Groupby and aggregate the dataframe."""
+    # Assemble grouping variables
+    groupby_list = [selected_var]
+    if groupby_var is not None:
+        groupby_list.append(groupby_var)
+    # Groupby and aggregate
+    # Count the weight column to get the number of actual respondents
+    # otherwise sum up the weights.
+    grpby = df.groupby(groupby_list)[[WEIGHT_KEY]]  # groupby object
+    if weighted:
+        out = grpby.sum()
+    else:
+        out = grpby.count()
+    # Note, streamlit appears to have issue with categorical indexes (possibly)
+    # after groupbys, displaying a warning that "The value is not part of the
+    # allowed options" along with a yellow exclamtion mark.
+    # Resetting the index to get a clean dataframe here, then worry about
+    # styling during display.
+    return (out
+            .round()
+            .astype(int)
+            .reset_index()
+            )
 
 
 def transform_data(
