@@ -131,18 +131,29 @@ def deploy_valid_skips_checkbox(
 
 def style_datatable(
         df: pd.DataFrame,
+        selected_var: str,
         weighted: bool) -> pd.io.formats.style.Styler:
     return (df
             .rename(
                 {WEIGHT_KEY:
                     Y_WT_FREQ_AXIS_LABEL if weighted else Y_FREQ_AXIS_LABEL},
                 axis='columns')
-            .style
-            # Note: hide(axis='index') doesn't work with streamlit.
-            # Streamlit as of >= 1.10 can't hide row indices at all in a
-            # st.dataframe call.
+            # Note: in order to not display numerical indexes, the obvious
+            # way would be `.style.hide(axis='index')`. However, Streamlit as
+            # of >= 1.10 can't hide row indices at all in a st.dataframe call.
             # https://docs.streamlit.io/knowledge-base/using-streamlit/hide-row-indices-displaying-dataframe
-            .hide(axis='index')
+            # Instead, we'll set the index as the selected variable to mimic
+            # this behaviour. Unexpectedly, Streamlit has a problem with
+            # categorical indexes, claiming that the index values are not
+            # part of the allowed categorical values and displaying yellow
+            # warning emojis. I am unable to suppress this, and it does not
+            # appear to me that the values are actually not part of the
+            # allowed values. The workaround is to convert the selected_var
+            # column to str before setting it as an index.
+            .astype({selected_var: str})
+            .set_index(selected_var)
+            .style
+            # Additional styling calls can be chained here.
             )
 
 
@@ -310,7 +321,7 @@ def main(debug=False, log_file_path: str | None = None):
     make_gap(2)
 
     # Display datatable
-    df = style_datatable(df, plot_weighted)
+    df = style_datatable(df, selected_var, plot_weighted)
     st.dataframe(df, use_container_width=True)
     # Logging for debugging
     if debug:
