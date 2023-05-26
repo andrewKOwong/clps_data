@@ -136,6 +136,15 @@ def deploy_valid_skips_checkbox(
     return remove_valid_skips
 
 
+def deploy_disable_interactivity_checkbox() -> bool:
+    """Deploy a checkbox to disable interactive chart (pan/zoom).
+
+    Returns:
+        True if interactivity should be disabled.
+    """
+    return st.checkbox('Disable chart pan/zoom.', value=False)
+
+
 def style_datatable(
         df: pd.DataFrame,
         selected_var: str,
@@ -307,6 +316,7 @@ def main(debug=False, log_file_path: str | None = None):
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
     remove_valid_skips = deploy_valid_skips_checkbox(svs, selected_var)
+    disable_interactive = deploy_disable_interactivity_checkbox()
     # Spacing
     st.divider()
     make_gap(3)
@@ -326,9 +336,9 @@ def main(debug=False, log_file_path: str | None = None):
     chart_df = create_chart(
         clps_df, svs, selected_var, groupby_var, plot_weighted)
     # Display Chart
-    st.altair_chart(chart_df.interactive(),
-                    use_container_width=True,
-                    )
+    st.altair_chart(
+        chart_df if disable_interactive else chart_df.interactive(),
+        use_container_width=True)
     # Spacing
     st.divider()
     make_gap(2)
