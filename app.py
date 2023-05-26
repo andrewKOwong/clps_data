@@ -345,7 +345,12 @@ def main(debug=False, log_file_path: str | None = None):
 
     # Display datatable
     clps_df = style_datatable(clps_df, selected_var, plot_weighted)
-    st.dataframe(clps_df, use_container_width=True)
+    st.dataframe(
+        clps_df,
+        use_container_width=True,
+        # Magic formula for getting the dataframe to not scroll
+        # https://discuss.streamlit.io/t/st-dataframe-controlling-the-height-threshold-for-scolling/31769
+        height=(clps_df.data.shape[0] + 1) * 35 + 3)
 
     # Logging for debugging
     if debug:
