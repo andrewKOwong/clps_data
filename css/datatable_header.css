@@ -1,0 +1,19 @@
+/*
+th[role="columnheader"]{
+    background-color: yellow;
+    font-size: 12rem;
+}
+
+div[class="ReactVirtualized__Grid table-bottom-left"] div,
+div[class="ReactVirtualized__Grid table-top-right"] div {
+    color: red;
+}
+
+td {
+    font-size: 2rem;
+}
+
+th {
+    font-size: 2rem !important;
+}
+*/

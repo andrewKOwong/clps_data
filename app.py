@@ -40,6 +40,8 @@ LABEL_WEIGHTED = 'Weighted Count'  # y label for weighted charts
 LABEL_UNWEIGHTED = 'Count'  # y label for unweighted charts
 LABEL_SELECT_VAR = 'Category'  # tooltip label for selected survey variable
 LABEL_GROUPBY_VAR = 'Sub-group'  # tooltip label for groupby variable
+#
+DATATABLE_HEADER_CSS = 'css/datatable_header.css'
 
 
 def deploy_sidebar(intro_fp: str | Path) -> None:
@@ -149,6 +151,9 @@ def style_datatable(
         df: pd.DataFrame,
         selected_var: str,
         weighted: bool) -> pd.io.formats.style.Styler:
+
+    # inject_datatable_header_style()
+    # import numpy as np
     return (df
             .rename(
                 {WEIGHT_KEY:
@@ -170,7 +175,18 @@ def style_datatable(
             .set_index(selected_var)
             .style
             # Additional styling calls can be chained here.
+            # Index styling doesn't appear to work
+            # .apply_index(
+            #     lambda s: np.where(
+            # ~s.isna(), 'background-color: blue;', 'background-color: blue;')
+            # )
+            # .highlight_max(axis='rows', color='lightgreen')
             )
+
+
+def inject_datatable_header_style() -> None:
+    with open(DATATABLE_HEADER_CSS) as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 
 def create_chart(
@@ -351,6 +367,8 @@ def main(debug=False, log_file_path: str | None = None):
         # Magic formula for getting the dataframe to not scroll
         # https://discuss.streamlit.io/t/st-dataframe-controlling-the-height-threshold-for-scolling/31769
         height=(clps_df.data.shape[0] + 1) * 35 + 3)
+
+    # st.table(clps_df)
 
     # Logging for debugging
     if debug:
