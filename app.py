@@ -263,6 +263,7 @@ def make_gap(n=3):
         st.text('')
 
 
+@st.cache_data
 def load_config() -> dict:
     """Load the config file."""
     with CONFIG_FP.open() as f:
