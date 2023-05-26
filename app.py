@@ -266,9 +266,9 @@ def main(debug=False, log_file_path: str | None = None):
     config = load_config()
     # Load main data and survey vars codebook info
     if config['data']['use_clps_compressed']:
-        df = load_data(config['data']['clps_compressed'])
+        clps_df = load_data(config['data']['clps_compressed'])
     else:
-        df = load_data(config['data']['clps_file'])
+        clps_df = load_data(config['data']['clps_file'])
     svs = load_survey_vars(config['data']['survey_vars_file'])
 
     # BEGIN: DATA SELECTION WIDGETS AND UI
@@ -289,8 +289,8 @@ def main(debug=False, log_file_path: str | None = None):
     # END: DATA SELECTION WIDGETS AND UI
 
     # Transform data
-    df = transform_data(
-        df=df,
+    clps_df = transform_data(
+        df=clps_df,
         survey_vars=svs,
         region=region,
         selected_var=selected_var,
@@ -298,7 +298,7 @@ def main(debug=False, log_file_path: str | None = None):
         remove_valid_skips=remove_valid_skips,
         weighted=plot_weighted)
 
-    chart_df = df.copy()
+    chart_df = clps_df.copy()
 
     # Hack to wrap long labels, for splitting in altair.
     # `wrap` breaks long str into a list of str, then stitch them back together
@@ -320,8 +320,8 @@ def main(debug=False, log_file_path: str | None = None):
     make_gap(2)
 
     # Display datatable
-    df = style_datatable(df, selected_var, plot_weighted)
-    st.dataframe(df, use_container_width=True)
+    clps_df = style_datatable(clps_df, selected_var, plot_weighted)
+    st.dataframe(clps_df, use_container_width=True)
     # Logging for debugging
     if debug:
         import logging
@@ -330,7 +330,7 @@ def main(debug=False, log_file_path: str | None = None):
         logging.debug(chart_df.to_json())
 
     # Return objects for testing
-    return {'processed_data': df, 'chart': chart_df,
+    return {'processed_data': clps_df, 'chart': chart_df,
             'survey_vars': svs,
             'selected_var': selected_var, 'groupby_var': groupby_var,
             }
