@@ -168,6 +168,14 @@ def create_chart(
     LABEL_UNWEIGHTED = 'Count'
     LABEL_SELECT_VAR = 'Category'
     LABEL_GROUPBY_VAR = 'Sub-group'
+    # Hack to wrap long labels, for splitting in altair.
+    # `wrap` breaks long str into a list of str, then stitch them back together
+    # with LABEL_SPLIT delimiter. Altair then uses this delimiter to split
+    # the str again using Vega expressions.
+    df = df.assign(**{
+        selected_var: lambda d: d[selected_var].cat.rename_categories(
+            lambda e: LABEL_SPLIT.join(wrap(e, 20)))
+    })
 
     # Assemble chart arguments into dict for expansion
     chart_args = {}
@@ -298,30 +306,21 @@ def main(debug=False, log_file_path: str | None = None):
         remove_valid_skips=remove_valid_skips,
         weighted=plot_weighted)
 
-    chart_df = clps_df.copy()
-
-    # Hack to wrap long labels, for splitting in altair.
-    # `wrap` breaks long str into a list of str, then stitch them back together
-    # with LABEL_SPLIT delimiter. Altair then uses this delimiter to split
-    # the str again using Vega expressions.
-    chart_df = chart_df.assign(**{
-        selected_var: lambda d: d[selected_var].cat.rename_categories(
-            lambda e: LABEL_SPLIT.join(wrap(e, 20)))
-    })
-
+    # Prepare Altair chart
     chart_df = create_chart(
-        chart_df, svs, selected_var, groupby_var, plot_weighted)
-
+        clps_df, svs, selected_var, groupby_var, plot_weighted)
+    # Display Chart
     st.altair_chart(chart_df.interactive(),
                     use_container_width=True,
                     )
-
+    # Spacing
     st.divider()
     make_gap(2)
 
     # Display datatable
     clps_df = style_datatable(clps_df, selected_var, plot_weighted)
     st.dataframe(clps_df, use_container_width=True)
+
     # Logging for debugging
     if debug:
         import logging
