@@ -22,7 +22,6 @@ reload(transform)
 
 CONFIG_FP = Path('config.yaml')
 
-LABEL_SPLIT = '----'
 
 Y_FREQ_AXIS_LABEL = 'Count'
 Y_WT_FREQ_AXIS_LABEL = 'Weighted Count'
@@ -33,6 +32,14 @@ TEXT_INTRO_FP = TEXT_FP / 'intro.md'
 NON_SELECTABLE = [ID_KEY, WEIGHT_KEY]
 # This text is displayed when no region is selected for the region selectbox
 NATIONAL = 'National'
+# Chart label constants
+# LABEL_SPLIT is used for breaking long labels, not sure why \n or \\n
+# doesn't work
+LABEL_SPLIT = '----'
+LABEL_WEIGHTED = 'Weighted Count'  # y label for weighted charts
+LABEL_UNWEIGHTED = 'Count'  # y label for unweighted charts
+LABEL_SELECT_VAR = 'Category'  # tooltip label for selected survey variable
+LABEL_GROUPBY_VAR = 'Sub-group'  # tooltip label for groupby variable
 
 
 def deploy_sidebar(intro_fp: str | Path) -> None:
@@ -163,15 +170,23 @@ def create_chart(
         selected_var: str,
         groupby_var: str | None,
         plot_weighted: bool) -> alt.Chart:
+    """Create an Altair chart object (bar chart).
 
-    LABEL_WEIGHTED = 'Weighted Count'
-    LABEL_UNWEIGHTED = 'Count'
-    LABEL_SELECT_VAR = 'Category'
-    LABEL_GROUPBY_VAR = 'Sub-group'
+    Args:
+        df: Dataframe to plot.
+        survey_vars: SurveyVars object, containing variable metadata.
+        selected_var: The variable selected for display.
+        groupby_var: The variable to groupby, if any.
+        plot_weighted: Whether to plot weighted or unweighted counts.
+
+    Returns:
+        An Altair chart object.
+    """
     # Hack to wrap long labels, for splitting in altair.
     # `wrap` breaks long str into a list of str, then stitch them back together
     # with LABEL_SPLIT delimiter. Altair then uses this delimiter to split
     # the str again using Vega expressions.
+    # Without this, x tick labels get too long for some survey variables.
     df = df.assign(**{
         selected_var: lambda d: d[selected_var].cat.rename_categories(
             lambda e: LABEL_SPLIT.join(wrap(e, 20)))
