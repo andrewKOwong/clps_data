@@ -251,10 +251,9 @@ def load_data(fp: str | Path) -> pd.DataFrame:
     return pd.read_csv(fp)
 
 
-# REFACTOR: currently uncached. Cacheing is possible with
-# returned object is pickle serializable, but can't because of mutation.
-# Can get around by making SurveyVars able to initialize with dict
-# representation of JSON.
+# REFACTOR: currently uncached.
+# Cacheing is possible when returned object is pickle serializable.
+# Will need to investigate why SurveyVars is not picklable.
 def load_survey_vars(fp: str | Path):
     return SurveyVars(fp)
 
