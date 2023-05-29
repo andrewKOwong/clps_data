@@ -27,7 +27,7 @@ Correct frequencies and weighted frequencies are hand copies from the codebook.
 """
 
 
-# Helper function or test individual raw survey variables
+# Helper function for testing individual raw survey variables
 def raw_var_tester(
         df: pd.DataFrame,
         survey_vars: SurveyVars,
