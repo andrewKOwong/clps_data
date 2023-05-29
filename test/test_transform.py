@@ -21,7 +21,13 @@ config = load_config()
 svs = SurveyVars(config['data']['survey_vars_file'])
 df = pd.read_csv(config['data']['clps_compressed'])
 
+"""
+Pick several survey variables, and test them without filtering or grouping.
+Correct frequencies and weighted frequencies are hand copies from the codebook.
+"""
 
+
+# Helper function or test individual raw survey variables
 def raw_var_tester(
         df: pd.DataFrame,
         survey_vars: SurveyVars,
@@ -90,12 +96,6 @@ def raw_var_tester(
             weighted=True
         )
         assert list(result[WEIGHT_KEY]) == wt_freqs
-
-
-"""
-Pick several survey variables, and test them without filtering or grouping.
-Correct frequencies and weighted frequencies are hand copies from the codebook.
-"""
 
 
 def test_raw_var_DSHP20E():
