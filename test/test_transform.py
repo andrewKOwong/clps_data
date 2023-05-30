@@ -4,7 +4,19 @@ from clps.transform import transform_data
 from clps.survey_vars_utils import SurveyVars
 import yaml
 from clps.constants.special_vars_names import (
-    WEIGHT_KEY, REGION_KEY, VALID_SKIP)
+    WEIGHT_KEY,
+    REGION_KEY,
+    NUMPPLHOUSE_KEY,
+    NUMPPLHOUSE18_KEY,
+    AGE_KEY,
+    GENDER_KEY,
+    RURALURBAN_KEY,
+    SEXORIENT_KEY,
+    INDIG_KEY,
+    VISMINORITY_KEY,
+    EDU_KEY,
+    EMPLOYED_KEY,
+    VALID_SKIP)
 
 
 CONFIG_FP = 'config.yaml'
@@ -252,6 +264,8 @@ def var_subgroup_tester(
     # No valid skip removal, frequency
     result = transform_data(
         **var_kwargs, remove_valid_skips=False, weighted=False)
+    print(result)
+    print(result[groupby_var])
     assert calculate_freq_helper(result) == correct_freq
     # No valid skip removal, weighted frequency
     result = transform_data(
@@ -259,7 +273,7 @@ def var_subgroup_tester(
     assert calculate_freq_helper(result) == correct_wt_freq
 
     # As above, but with valid skip removal
-    if is_valid_skip is not None:
+    if not is_valid_skip:
         result = transform_data(
             **var_kwargs, remove_valid_skips=True, weighted=False)
         assert calculate_freq_helper(result) == correct_freq
@@ -276,8 +290,114 @@ def test_var_subgroups_SERPROPB():
         selected_var_category='Debt or money owed to you',
         selected_var_code=6,
         region='Atlantic',
-        groupby_var='AGEGRP',
+        groupby_var=AGE_KEY,
         subgroup_name='45 to 54 years old',
         subgroup_code=4,
         is_valid_skip=False
+    )
+
+
+def test_var_subgroups_CHL10BP():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='CHL10BP',
+        selected_var_category='Yes',
+        selected_var_code=1,
+        region='Québec',
+        groupby_var=GENDER_KEY,
+        subgroup_name='Female gender',
+        subgroup_code=2,
+        is_valid_skip=False
+    )
+
+
+def test_var_subgroups_DSHP20G():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='DSHP20G',
+        selected_var_category='Not stated',
+        selected_var_code=9,
+        region='Ontario',
+        groupby_var=RURALURBAN_KEY,
+        subgroup_name='Urban',
+        subgroup_code=2,
+        is_valid_skip=False
+    )
+
+
+def test_var_subgroups_PRIP05K():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='PRIP05K',
+        selected_var_category='Yes',
+        selected_var_code=1,
+        region='Prairies',
+        groupby_var=SEXORIENT_KEY,
+        subgroup_name='Heterosexual',
+        subgroup_code=1,
+        is_valid_skip=False
+    )
+
+
+def test_var_subgroups_PRIP10B():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='PRIP10B',
+        selected_var_category=VALID_SKIP,
+        selected_var_code=6,
+        region='British Columbia',
+        groupby_var=INDIG_KEY,
+        subgroup_name='Indigenous people',
+        subgroup_code=1,
+        is_valid_skip=True
+    )
+
+
+def test_var_subgroups_LANP04P():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='LANP04P',
+        selected_var_category='Non-official language only',
+        selected_var_code=3,
+        region='Atlantic',
+        groupby_var=VISMINORITY_KEY,
+        subgroup_name='Not a visible minority',
+        subgroup_code=2,
+        is_valid_skip=False
+    )
+
+
+def test_var_subgroups_HLTFLP():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='HLTFLP',
+        selected_var_category='Experienced health challenges',
+        selected_var_code=1,
+        region='Québec',
+        groupby_var=EDU_KEY,
+        # Note, currently the apostrophe is actually a right quotation mark
+        subgroup_name="Bachelor’s degree or higher",
+        subgroup_code=3,
+        is_valid_skip=False
+    )
+
+
+def test_var_subgroups_FINFLP():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='FINFLP',
+        selected_var_category=VALID_SKIP,
+        selected_var_code=6,
+        region='Ontario',
+        groupby_var=EMPLOYED_KEY,
+        subgroup_name='No',
+        subgroup_code=2,
+        is_valid_skip=True
     )
