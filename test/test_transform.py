@@ -264,8 +264,6 @@ def var_subgroup_tester(
     # No valid skip removal, frequency
     result = transform_data(
         **var_kwargs, remove_valid_skips=False, weighted=False)
-    print(result)
-    print(result[groupby_var])
     assert calculate_freq_helper(result) == correct_freq
     # No valid skip removal, weighted frequency
     result = transform_data(
