@@ -128,6 +128,8 @@ class _SurveyVar:
             type: Literal['answer', 'freq', 'wtfreq', 'percent'],
             suppress_missing: bool = True) -> str:
         """"""
+        # This try/except handles the case where the survey variable doesn't
+        # have an answer section.
         try:
             match type:
                 case 'answer':
@@ -146,7 +148,16 @@ class _SurveyVar:
             else:
                 raise AttributeError(
                     "This variable doesn't have an answer section") from e
-        return lookup[code]
+        # This try/except handles the case where the code doesn't exist in the
+        # survey_variable
+        try:
+            return lookup[code]
+        except KeyError as e:
+            if suppress_missing:
+                return None
+            else:
+                raise KeyError(
+                    f"Code {code} not found in answer section") from e
 
     def lookup_answer(
             self, code: int | str, suppress_missing: bool = True) -> str:
