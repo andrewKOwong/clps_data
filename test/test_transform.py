@@ -401,3 +401,32 @@ def test_var_subgroups_FINFLP():
         subgroup_code=2,
         is_valid_skip=True
     )
+
+
+def test_var_subgroups_STAP40C():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='STAP40C',
+        selected_var_category='Yes',
+        selected_var_code=1,
+        region='Prairies',
+        groupby_var=NUMPPLHOUSE_KEY,
+        subgroup_name='3 persons or more',
+        subgroup_code=3,
+        is_valid_skip=False
+    )
+
+
+def test_var_subgroups_SCPP20():
+    var_subgroup_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='SCPP20',
+        selected_var_category='Not stated',
+        selected_var_code=9,
+        region='British Columbia',
+        groupby_var=NUMPPLHOUSE18_KEY,
+        subgroup_name='Not stated',
+        subgroup_code=99
+    )
