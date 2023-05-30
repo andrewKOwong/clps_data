@@ -282,6 +282,9 @@ class SurveyVars:
         """[] indexer to get a survey variable by its key."""
         return self._survey_vars[key]
 
+    def __iter__(self):
+        return iter(self._survey_vars.values())
+
     def get_var(self, key: str) -> _SurveyVar:
         """Get a survey variable by its key."""
         return self._survey_vars[key]
