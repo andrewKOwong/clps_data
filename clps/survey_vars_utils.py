@@ -225,39 +225,57 @@ class _SurveyVar:
 
     @property
     def ans_cats(self):
-        return self._ans_cats
+        try:
+            return self._ans_cats
+        except AttributeError:
+            return None
 
     @property
     def answer_categories(self):
-        return self._ans_cats
+        return self.ans_cats
 
     @property
     def codes(self):
-        return self._codes
-
-    @property
-    def frequencies(self):
-        return self._frequency
+        try:
+            return self._codes
+        except AttributeError:
+            return None
 
     @property
     def freqs(self):
-        return self._frequency
+        try:
+            return self._frequency
+        except AttributeError:
+            return None
+
+    @property
+    def frequencies(self):
+        return self._freqs
 
     @property
     def wt_freqs(self):
-        return self._weighted_frequency
+        try:
+            return self._weighted_frequency
+        except AttributeError:
+            return None
 
     @property
     def weighted_frequencies(self):
-        return self._weighted_frequency
+        return self.wt_freqs
 
     @property
     def percents(self):
-        return self._percent
+        try:
+            return self._percent
+        except AttributeError:
+            return None
 
     @property
     def totals(self):
-        return self._total
+        try:
+            return self._total
+        except AttributeError:
+            return None
 
 
 class SurveyVars:
