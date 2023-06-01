@@ -28,3 +28,4 @@ GROUPBY_VARS = {
     EMPLOYED_KEY: 'Worked at Job/Business in Last 12 Months'
 }
 VALID_SKIP = 'Valid skip'
+NOT_STATED = 'Not stated'

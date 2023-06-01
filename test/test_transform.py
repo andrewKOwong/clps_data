@@ -16,7 +16,8 @@ from clps.constants.special_vars_names import (
     VISMINORITY_KEY,
     EDU_KEY,
     EMPLOYED_KEY,
-    VALID_SKIP)
+    VALID_SKIP,
+    NOT_STATED)
 
 
 CONFIG_FP = 'config.yaml'
@@ -315,7 +316,7 @@ def test_var_subgroups_DSHP20G():
         df=df,
         survey_vars=svs,
         selected_var='DSHP20G',
-        selected_var_category='Not stated',
+        selected_var_category=NOT_STATED,
         selected_var_code=9,
         region='Ontario',
         groupby_var=RURALURBAN_KEY,
@@ -421,10 +422,10 @@ def test_var_subgroups_SCPP20():
         df=df,
         survey_vars=svs,
         selected_var='SCPP20',
-        selected_var_category='Not stated',
+        selected_var_category=NOT_STATED,
         selected_var_code=9,
         region='British Columbia',
         groupby_var=NUMPPLHOUSE18_KEY,
-        subgroup_name='Not stated',
+        subgroup_name=NOT_STATED,
         subgroup_code=99
     )
