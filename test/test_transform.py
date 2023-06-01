@@ -48,7 +48,7 @@ def raw_var_tester(
         selected_var: str,
         freqs: list[int],
         wt_freqs: list[int],
-        valid_skip_number: int | None = None):
+        valid_skip_number: int | None = None) -> None:
     """Template tester function for a single raw variable.
 
     Survey variable of interest is tested weighted/unweighted, and with/without
@@ -114,7 +114,7 @@ def raw_var_tester(
         assert list(result[WEIGHT_KEY]) == wt_freqs
 
 
-def test_raw_var_DSHP20E():
+def test_raw_var_DSHP20E() -> None:
     raw_var_tester(
         df=df,
         survey_vars=svs,
@@ -124,7 +124,7 @@ def test_raw_var_DSHP20E():
         valid_skip_number=3)
 
 
-def test_raw_var_CSTP10EP():
+def test_raw_var_CSTP10EP() -> None:
     raw_var_tester(
         df=df,
         survey_vars=svs,
@@ -134,7 +134,7 @@ def test_raw_var_CSTP10EP():
         valid_skip_number=3)
 
 
-def test_raw_var_AGEGRP():
+def test_raw_var_AGEGRP() -> None:
     raw_var_tester(
         df=df,
         survey_vars=svs,
@@ -144,7 +144,7 @@ def test_raw_var_AGEGRP():
                   4_714_059, 5_201_210, 6_672_711])
 
 
-def test_raw_var_PRIP05N():
+def test_raw_var_PRIP05N() -> None:
     raw_var_tester(
         df=df,
         survey_vars=svs,
@@ -265,7 +265,7 @@ def var_subgroup_tester(
     var_kwargs['region'] = region
     var_kwargs['groupby_var'] = groupby_var
 
-    def calculate_freq_helper(result):
+    def calculate_freq_helper(result) -> int:
         """Impure helper for getting [weighted] frequency from results."""
         # Selected var, etc., reaches into outer scope
         return (
@@ -295,7 +295,7 @@ def var_subgroup_tester(
         assert calculate_freq_helper(result) == correct_wt_freq
 
 
-def test_var_subgroups_SERPROPB():
+def test_var_subgroups_SERPROPB() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -310,7 +310,7 @@ def test_var_subgroups_SERPROPB():
     )
 
 
-def test_var_subgroups_CHL10BP():
+def test_var_subgroups_CHL10BP() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -325,7 +325,7 @@ def test_var_subgroups_CHL10BP():
     )
 
 
-def test_var_subgroups_DSHP20G():
+def test_var_subgroups_DSHP20G() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -340,7 +340,7 @@ def test_var_subgroups_DSHP20G():
     )
 
 
-def test_var_subgroups_PRIP05K():
+def test_var_subgroups_PRIP05K() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -355,7 +355,7 @@ def test_var_subgroups_PRIP05K():
     )
 
 
-def test_var_subgroups_PRIP10B():
+def test_var_subgroups_PRIP10B() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -370,7 +370,7 @@ def test_var_subgroups_PRIP10B():
     )
 
 
-def test_var_subgroups_LANP04P():
+def test_var_subgroups_LANP04P() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -385,7 +385,7 @@ def test_var_subgroups_LANP04P():
     )
 
 
-def test_var_subgroups_HLTFLP():
+def test_var_subgroups_HLTFLP() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -401,7 +401,7 @@ def test_var_subgroups_HLTFLP():
     )
 
 
-def test_var_subgroups_FINFLP():
+def test_var_subgroups_FINFLP() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -416,7 +416,7 @@ def test_var_subgroups_FINFLP():
     )
 
 
-def test_var_subgroups_STAP40C():
+def test_var_subgroups_STAP40C() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,
@@ -431,7 +431,7 @@ def test_var_subgroups_STAP40C():
     )
 
 
-def test_var_subgroups_SCPP20():
+def test_var_subgroups_SCPP20() -> None:
     var_subgroup_tester(
         df=df,
         survey_vars=svs,

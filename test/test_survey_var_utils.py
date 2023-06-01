@@ -24,7 +24,7 @@ raw_svs = load_keyed_survey_vars(config['data']['survey_vars_file'])
 
 
 # Test if valid skips are correctly identified by _SurveyVar.has_valid_skips()
-def test_has_valid_skips():
+def test_has_valid_skips() -> None:
     for sv, raw_sv in zip(svs, raw_svs.values()):
         try:
             raw_sv[SVK.ANSWER_CATEGORIES]
@@ -43,7 +43,7 @@ the different attribute access points over the set of tests.
 """
 
 
-def test_PUMFID():
+def test_PUMFID() -> None:
     # Check that PUMFID has no answer section
     assert svs[N.ID_KEY].answer_categories is None
     assert (svs[N.ID_KEY].concept ==
@@ -51,13 +51,13 @@ def test_PUMFID():
             ' the public use microdata file')
 
 
-def test_WTPP():
+def test_WTPP() -> None:
     assert svs[N.WEIGHT_KEY].answer_categories is None
     assert (svs[N.WEIGHT_KEY].universe ==
             'All respondents')
 
 
-def test_AGEGRPP():
+def test_AGEGRPP() -> None:
     sv = svs[N.AGE_KEY]
     assert sv.note == 'Based on AGE'
     assert sv.ans_cats[2] == '35 to 44 years old'
@@ -67,7 +67,7 @@ def test_AGEGRPP():
     assert len(sv.codes) == 6
 
 
-def test_VERDATE():
+def test_VERDATE() -> None:
     sv = svs[N.VERDATE_KEY]
     assert sv.universe == 'All respondents'
     assert sv.ans_cats == ['']
@@ -79,7 +79,7 @@ def test_VERDATE():
         sv.lookup_answer(2, suppress_missing=False)
 
 
-def test_PROBCNTP():
+def test_PROBCNTP() -> None:
     sv = svs[N.PROBCNTP_KEY]
     assert sv.question_name == ''
     assert sv.question_text == ''
@@ -99,7 +99,7 @@ def test_PROBCNTP():
     assert sv.lookup_answer(99) == NOT_STATED
 
 
-def test_SERPROBP():
+def test_SERPROBP() -> None:
     sv = svs[N.SERPROBP_KEY]
     assert sv.universe == 'At least one of PRI_Q10A to PRI_Q10S = 1'
     assert len(sv.ans_cats) == 21
@@ -110,7 +110,7 @@ def test_SERPROBP():
     assert sv.lookup_percent(10) == 0.6
 
 
-def test_PRIP10G():
+def test_PRIP10G() -> None:
     sv = svs['PRIP10G']
     assert sv.universe == 'PRI_Q05G = 1'
     assert sv.question_text == (
@@ -126,7 +126,7 @@ def test_PRIP10G():
     assert sv.lookup_percent(9) == 1.5
 
 
-def test_ASTP10G():
+def test_ASTP10G() -> None:
     sv = svs['ASTP10G']
     assert sv.length == '1.0'
     assert sv.position == '150'
@@ -135,13 +135,13 @@ def test_ASTP10G():
     assert sv.totals[SVK.FREQUENCY] == '21170'
 
 
-def test_LGAP40P():
+def test_LGAP40P() -> None:
     sv = svs['LGAP40P']
     assert sv.lookup_answer(7) == 'Don’t know'
     assert sv.lookup_wt_freq(2) == 4_188_071
 
 
-def test_CSTP10NP():
+def test_CSTP10NP() -> None:
     sv = svs['CSTP10NP']
     assert sv.lookup_answer(1) == 'Yes'
     assert sv.lookup_freq(1) == 407
