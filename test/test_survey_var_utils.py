@@ -17,10 +17,13 @@ def load_config() -> dict:
 
 config = load_config()
 
+# Load a SurveyVars object as well as a dictionary version of the raw JSON.
+# The raw dict will be used as a testing reference.
 svs = SurveyVars(config['data']['survey_vars_file'])
 raw_svs = load_keyed_survey_vars(config['data']['survey_vars_file'])
 
 
+# Test if valid skips are correctly identified by _SurveyVar.has_valid_skips()
 def test_has_valid_skips():
     for sv, raw_sv in zip(svs, raw_svs.values()):
         try:
