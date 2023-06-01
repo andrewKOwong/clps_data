@@ -15,6 +15,7 @@ VISMINORITY_KEY = 'VISMFLP'
 EDU_KEY = 'EDUGRPP'
 EMPLOYED_KEY = 'MAP01'
 WEIGHT_KEY = 'WTPP'
+VERDATE_KEY = 'VERDATE'
 GROUPBY_VARS = {
     NUMPPLHOUSE_KEY: 'Number of People in Household',
     NUMPPLHOUSE18_KEY: 'Number of People in Household 18+',
