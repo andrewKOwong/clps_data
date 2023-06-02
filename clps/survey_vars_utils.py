@@ -373,6 +373,8 @@ class SurveyVars:
     """A class to represent survey variables for convenient access.
 
     I.e. from survey_vars.json extracted from the CLPS codebook.
+    Supports [ ] indexing by variable name. Iteration will iterate over a list
+    of the individual _SurveyVar objects.
     """
 
     def __init__(self, survey_vars_fp: str | Path):
@@ -395,7 +397,7 @@ class SurveyVars:
         return iter(self._survey_vars.values())
 
     def get_var(self, key: str) -> _SurveyVar:
-        """Get a survey variable by its key."""
+        """Get a survey variable by its name/key."""
         return self._survey_vars[key]
 
     def get_all_var_names(self) -> list[str]:
@@ -408,12 +410,19 @@ class SurveyVars:
         return list(self._survey_vars.keys())
 
     def get_region(self):
-        """Get a region by its key."""
+        """Get the _SurveyVar object for the REGION survey variable."""
         return self._survey_vars[N.REGION_KEY]
 
 
 def load_survey_vars(fp: str | Path) -> list:
-    """Load the survey variables from the JSON file as a list."""
+    """Load the survey variables from the JSON file as a list.
+
+    Args:
+        fp: Path to the survey variables JSON file.
+
+    Returns:
+        A list of survey variables.
+    """
     if isinstance(fp, str):
         fp = Path(fp)
     with fp.open() as f:
@@ -421,7 +430,14 @@ def load_survey_vars(fp: str | Path) -> list:
 
 
 def load_keyed_survey_vars(fp: str | Path) -> dict:
-    """Load the survey variables from the JSON file with var name keys."""
+    """Load the survey variables from the JSON file with var name keys.
+
+    Args:
+        fp: Path to the survey variables JSON file.
+
+    Returns:
+        A dictionary of survey variables with var name keys.
+    """
     if isinstance(fp, str):
         fp = Path(fp)
     with fp.open() as f:
