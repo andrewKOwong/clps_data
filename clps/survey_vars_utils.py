@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal
 from clps.constants import survey_vars_keys as SVK
 from clps.constants import special_vars_names as N
+from copy import deepcopy
 
 
 class _SurveyVar:
@@ -268,11 +269,12 @@ class _SurveyVar:
         return N.VALID_SKIP in self.ans_cats
 
     """
-    Use properties to make the data read-only.
+    Use properties to make the data read-only. For lists/dicts, return a copy
+    so the original list is not mutated by accident.
     """
     @property
     def raw(self) -> dict:
-        return self._raw
+        return deepcopy(self._raw)
 
     @property
     def name(self) -> str:
@@ -317,7 +319,7 @@ class _SurveyVar:
     @property
     def ans_cats(self) -> list[str] | None:
         try:
-            return self._ans_cats
+            return deepcopy(self._ans_cats)
         except AttributeError:
             return None
 
@@ -328,25 +330,25 @@ class _SurveyVar:
     @property
     def codes(self) -> list[int] | list[str] | None:
         try:
-            return self._codes
+            return deepcopy(self._codes)
         except AttributeError:
             return None
 
     @property
     def freqs(self) -> list[int] | None:
         try:
-            return self._frequency
+            return deepcopy(self._frequency)
         except AttributeError:
             return None
 
     @property
     def frequencies(self) -> list[int] | None:
-        return self._freqs
+        return deepcopy(self._freqs)
 
     @property
     def wt_freqs(self) -> list[int] | None:
         try:
-            return self._weighted_frequency
+            return deepcopy(self._weighted_frequency)
         except AttributeError:
             return None
 
@@ -357,14 +359,14 @@ class _SurveyVar:
     @property
     def percents(self) -> list[float] | None:
         try:
-            return self._percent
+            return deepcopy(self._percent)
         except AttributeError:
             return None
 
     @property
     def totals(self) -> dict:
         try:
-            return self._total
+            return deepcopy(self._total)
         except AttributeError:
             return None
 
