@@ -8,12 +8,13 @@ from clps.constants import special_vars_names as N
 class _SurveyVar:
     """A class to represent a survey variable for convenient access.
 
-    Handles dealing with special cases like PROBCNTP and VERDATE.
-
-    Extensible to add more getters.
+    Handles dealing with PROBCNTP as a special case.
     """
 
-    def __init__(self, survey_var: dict, attempt_int_conversion: bool = True):
+    def __init__(
+            self,
+            survey_var: dict,
+            attempt_int_conversion: bool = True) -> None:
         """
         Args:
             survey_var: A survey variable dictionary, i.e. individual list
@@ -21,9 +22,9 @@ class _SurveyVar:
             attempt_int_conversion: Whether to attempt to convert codes to
                 integers. If this fails, codes will be left as strings.
         """
-        # Original dict
+        # Make a copy of the original dict
         raw = self._raw = survey_var.copy()
-        # Data
+        # Insert the data
         self._name = raw[SVK.VAR_NAME]
         self._length = raw[SVK.LENGTH]
         self._position = raw[SVK.POSITION]
@@ -33,21 +34,29 @@ class _SurveyVar:
         self._universe = raw[SVK.UNIVERSE]
         self._note = raw[SVK.NOTE]
         self._source = raw[SVK.SOURCE]
-        # Skip answer section entirely for vars where it doesn't exist.
+        # Skip answer section entirely for survey vars where it doesn't exist.
         try:
             raw[SVK.ANSWER_CATEGORIES]
         except KeyError:
             pass
         else:
+            # Handle PROBCNTP as a special case
             if self._name == N.PROBCNTP_KEY:
                 self._handle_PROBCNTP_answer_section()
-                # Don't generate freq etc. lookups
+                # PROCNTP has only aggregated frequencies etc,
+                # so don't generate those lookups.
                 self._generate_ans_lookup_by_code()
             else:
                 self._handle_answer_section(attempt_int_conversion)
                 self._generate_lookup_by_code()
 
     def _handle_answer_section(self, attempt_int_conversion: bool) -> None:
+        """Handle the answer section of the survey variable.
+
+        Args:
+            attempt_int_conversion: Whether to attempt to convert codes to
+                integers. If this fails, codes will be left as strings.
+        """
         self._ans_cats = self._raw[SVK.ANSWER_CATEGORIES]
         self._codes = self._raw[SVK.CODE]
         if attempt_int_conversion:
@@ -61,6 +70,15 @@ class _SurveyVar:
         self._total = self._raw[SVK.TOTAL]
 
     def _handle_PROBCNTP_answer_section(self) -> None:
+        """Handles the answer section of the PROBCNTP survey variable.
+
+        Creates several private attributes for the aggregated data. Replaces
+        the aggregated '01-16' code with individual codes and corresponding
+        answer categories.
+
+        Frequency etc. lookups are not generated for PROBCNTP, as this cannot
+        be inferred from codebook information alone.
+        """
         raw = self._raw
         self._aggregate_ans_cats = raw[SVK.ANSWER_CATEGORIES]
         self._aggregate_codes = raw[SVK.CODE]
@@ -71,22 +89,23 @@ class _SurveyVar:
         # Copy out the aggregate codes
         codes = self._aggregate_codes.copy()
         # Position of the 01-16 str code
-        sum_idx = codes.index(N.PROBCNTP_AGGREGATE_CODE)
+        agg_code_idx = codes.index(N.PROBCNTP_AGGREGATE_CODE)
         # Remove the aggregate code
-        agg_code = codes.pop(sum_idx)
-        # This might as well be hard coded, but it's the 1 and 16
+        agg_code = codes.pop(agg_code_idx)
+        # Generate individual codes from '01-16'.
+        # This probably could be hard coded instead.
         start, end = tuple([int(c) for c in agg_code.split('-')])
         indiv_codes = list(range(start, end + 1))
-        # Insert the individual codes
+        # Insert the individual codes back into the code list.
         indiv_codes.reverse()
         for c in indiv_codes:
-            codes.insert(sum_idx, c)
+            codes.insert(agg_code_idx, c)
         codes = [int(c) for c in codes]
 
-        # Copy out the aggregate answer categories
+        # Copy out the aggregate answer category, then remove it.
         ans_cats = self._aggregate_ans_cats.copy()
         # Remove the aggregate answer category
-        ans_cats.pop(sum_idx)
+        ans_cats.pop(agg_code_idx)
         # Insert the NEW individual answer categories.
         # Originally, was going to append the code to the "Number of ..."
         # string, but that makes the labels kind of repetitive.
@@ -94,21 +113,23 @@ class _SurveyVar:
         # it anyways.
         indiv_ans_cats = [f'{c}' for c in indiv_codes]
         for a in indiv_ans_cats:
-            ans_cats.insert(sum_idx, a)
+            ans_cats.insert(agg_code_idx, a)
 
         self._ans_cats = ans_cats
         self._codes = codes
 
-        def error_func(self):
+        # Raise if user tries to access frequency lookups etc.
+        def error_func(self) -> None:
             raise NotImplementedError(
                 "PROBCNTP frequency/weighted frequency/percent lookup is not "
                 "implemented yet."
             )
-        self.lookup_freq = self.lookup_wt_freq = error_func
+        self.lookup_freq = error_func
+        self.lookup_wt_freq = error_func
         self.lookup_percent = error_func
 
     def _generate_lookup_by_code(self) -> str:
-        """"""
+        """Generate code lookup dicts for answer categories, etc."""
         self._ans_lookup = {
             c: a for c, a in zip(self.codes, self.answer_categories)}
         self._freq_lookup = {
@@ -126,8 +147,17 @@ class _SurveyVar:
             self,
             code: int | str,
             type: Literal['answer', 'freq', 'wtfreq', 'percent'],
-            suppress_missing: bool = True) -> str:
-        """"""
+            suppress_missing: bool = True) -> str | None:
+        """Lookup answer category, frequency etc. by code.
+
+        Backend for public lookup methods.
+
+        Args:
+            code: The code to lookup. Most codes are ints, occasionally codes
+                are strings (e.g. VERDATE).
+            type: The type of lookup to perform.
+            suppress_missing: If the code doesn't exist, return None.
+        """
         # This try/except handles the case where the survey variable doesn't
         # have an answer section.
         try:
@@ -160,19 +190,67 @@ class _SurveyVar:
                     f"Code {code} not found in answer section") from e
 
     def lookup_answer(
-            self, code: int | str, suppress_missing: bool = True) -> str:
+            self,
+            code: int | str,
+            suppress_missing: bool = True) -> str | None:
+        """Lookup answer category by code.
+
+        Args
+            code: The code to lookup. Most codes are ints, occasionally codes
+                are strings (e.g. VERDATE).
+            suppress_missing: If the code doesn't exist, return None.
+
+        Returns:
+            The answer category corresponding to the code.
+        """
         return self._lookup_by_code(code, 'answer', suppress_missing)
 
     def lookup_freq(
-            self, code: int | str, suppress_missing: bool = True) -> int:
+            self,
+            code: int | str,
+            suppress_missing: bool = True) -> int | None:
+        """Lookup answer category by code.
+
+        Args
+            code: The code to lookup. Most codes are ints, occasionally codes
+                are strings (e.g. VERDATE).
+            suppress_missing: If the code doesn't exist, return None.
+
+        Returns:
+            Frequency corresponding to the code.
+        """
         return int(self._lookup_by_code(code, 'freq', suppress_missing))
 
     def lookup_wt_freq(
-            self, code: int | str, suppress_missing: bool = True) -> int:
+            self,
+            code: int | str,
+            suppress_missing: bool = True) -> int:
+        """Lookup answer category by code.
+
+        Args
+            code: The code to lookup. Most codes are ints, occasionally codes
+                are strings (e.g. VERDATE).
+            suppress_missing: If the code doesn't exist, return None.
+
+        Returns:
+            Weighted frequency corresponding to the code.
+        """
         return int(self._lookup_by_code(code, 'wtfreq', suppress_missing))
 
     def lookup_percent(
-            self, code: int | str, suppress_missing: bool = True) -> float:
+            self,
+            code: int | str,
+            suppress_missing: bool = True) -> float:
+        """Lookup answer category by code.
+
+        Args
+            code: The code to lookup. Most codes are ints, occasionally codes
+                are strings (e.g. VERDATE).
+            suppress_missing: If the code doesn't exist, return None.
+
+        Returns:
+            Percent corresponding to the code.
+        """
         return float(self._lookup_by_code(code, 'percent', suppress_missing))
 
     def has_valid_skips(self) -> bool:
@@ -189,100 +267,102 @@ class _SurveyVar:
         # Check for valid skips
         return N.VALID_SKIP in self.ans_cats
 
-    # Read only data
+    """
+    Use properties to make the data read-only.
+    """
     @property
-    def raw(self):
+    def raw(self) -> dict:
         return self._raw
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @property
-    def var_name(self):
+    def var_name(self) -> str:
         return self._name
 
     @property
-    def length(self):
+    def length(self) -> str:
         return self._length
 
     @property
-    def position(self):
+    def position(self) -> str:
         return self._position
 
     @property
-    def question_name(self):
+    def question_name(self) -> str:
         return self._question_name
 
     @property
-    def concept(self):
+    def concept(self) -> str:
         return self._concept
 
     @property
-    def question_text(self):
+    def question_text(self) -> str:
         return self._question_text
 
     @property
-    def universe(self):
+    def universe(self) -> str:
         return self._universe
 
     @property
-    def note(self):
+    def note(self) -> str:
         return self._note
 
     @property
-    def source(self):
+    def source(self) -> str:
         return self._source
 
     @property
-    def ans_cats(self):
+    def ans_cats(self) -> list[str] | None:
         try:
             return self._ans_cats
         except AttributeError:
             return None
 
     @property
-    def answer_categories(self):
+    def answer_categories(self) -> list[str] | None:
         return self.ans_cats
 
     @property
-    def codes(self):
+    def codes(self) -> list[int] | list[str] | None:
         try:
             return self._codes
         except AttributeError:
             return None
 
     @property
-    def freqs(self):
+    def freqs(self) -> list[int] | None:
         try:
             return self._frequency
         except AttributeError:
             return None
 
     @property
-    def frequencies(self):
+    def frequencies(self) -> list[int] | None:
         return self._freqs
 
     @property
-    def wt_freqs(self):
+    def wt_freqs(self) -> list[int] | None:
         try:
             return self._weighted_frequency
         except AttributeError:
             return None
 
     @property
-    def weighted_frequencies(self):
+    def weighted_frequencies(self) -> list[int] | None:
         return self.wt_freqs
 
     @property
-    def percents(self):
+    def percents(self) -> list[float] | None:
         try:
             return self._percent
         except AttributeError:
             return None
 
     @property
-    def totals(self):
+    def totals(self) -> dict:
         try:
             return self._total
         except AttributeError:
