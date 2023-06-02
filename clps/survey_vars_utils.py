@@ -46,7 +46,9 @@ class _SurveyVar:
                 self._handle_PROBCNTP_answer_section()
                 # PROCNTP has only aggregated frequencies etc,
                 # so don't generate those lookups.
-                self._generate_ans_lookup_by_code()
+                self._generate_lookup_by_code(
+                    freq=False, wt_freq=False, percent=False
+                )
             else:
                 self._handle_answer_section(attempt_int_conversion)
                 self._generate_lookup_by_code()
@@ -129,20 +131,32 @@ class _SurveyVar:
         self.lookup_wt_freq = error_func
         self.lookup_percent = error_func
 
-    def _generate_lookup_by_code(self) -> str:
-        """Generate code lookup dicts for answer categories, etc."""
-        self._ans_lookup = {
-            c: a for c, a in zip(self.codes, self.answer_categories)}
-        self._freq_lookup = {
-            c: a for c, a in zip(self.codes, self.freqs)}
-        self._wt_freq_lookup = {
-            c: a for c, a in zip(self.codes, self.wt_freqs)}
-        self._percent_lookup = {
-            c: a for c, a in zip(self.codes, self.percents)}
+    def _generate_lookup_by_code(
+            self,
+            ans: bool = True,
+            freq: bool = True,
+            wt_freq: bool = True,
+            percent: bool = True) -> str:
+        """Generate code lookup dicts for answer categories, etc.
 
-    def _generate_ans_lookup_by_code(self) -> dict:
-        self._ans_lookup = {
-            c: a for c, a in zip(self.codes, self.answer_categories)}
+        Args:
+            ans: Whether to generate the answer category lookup.
+            freq: Whether to generate the frequency lookup.
+            wt_freq: Whether to generate the weighted frequency lookup.
+            percent: Whether to generate the percent lookup.
+        """
+        if ans:
+            self._ans_lookup = {
+                c: a for c, a in zip(self.codes, self.answer_categories)}
+        if freq:
+            self._freq_lookup = {
+                c: a for c, a in zip(self.codes, self.freqs)}
+        if wt_freq:
+            self._wt_freq_lookup = {
+                c: a for c, a in zip(self.codes, self.wt_freqs)}
+        if percent:
+            self._percent_lookup = {
+                c: a for c, a in zip(self.codes, self.percents)}
 
     def _lookup_by_code(
             self,
