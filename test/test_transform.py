@@ -1,7 +1,7 @@
 import pandas as pd
 from typing import Literal
 from clps.transform import transform_data
-from clps.survey_vars_utils import SurveyVars
+from clps.survey_vars.utils import SurveyVars
 import yaml
 from clps.constants.special_vars_names import (
     WEIGHT_KEY,

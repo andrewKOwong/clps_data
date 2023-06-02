@@ -1,7 +1,7 @@
 import pandas as pd
 from clps.constants.special_vars_names import (
     REGION_KEY, VALID_SKIP, WEIGHT_KEY)
-from clps.survey_vars_utils import SurveyVars
+from clps.survey_vars.utils import SurveyVars
 
 
 def _filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
