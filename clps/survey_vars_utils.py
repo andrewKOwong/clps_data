@@ -53,6 +53,14 @@ class _SurveyVar:
                 self._handle_answer_section(attempt_int_conversion)
                 self._generate_lookup_by_code()
 
+    def __repr__(self) -> str:
+        # Use the underlying dict's repr
+        return self._raw.__repr__()
+
+    def __str__(self) -> str:
+        # Use the underlying dict's str
+        return self._raw.__str__()
+
     def _handle_answer_section(self, attempt_int_conversion: bool) -> None:
         """Handle the answer section of the survey variable.
 
@@ -398,12 +406,23 @@ class SurveyVars:
         Args:
             survey_vars_fp: Path to the survey variables JSON file.
         """
+        # Save the original file path
+        self._fp = survey_vars_fp
         # JSON as a dictionary with var name keys
         self._survey_vars_raw = load_keyed_survey_vars(survey_vars_fp)
         # Keyed survey variables where each survey variable has been
         # initialized as a _SurveyVar object
         self._survey_vars = {
             k: _SurveyVar(v) for k, v in self._survey_vars_raw.items()}
+
+    def __repr__(self):
+        return f"SurveyVars('{self._fp}')"
+
+    def __str__(self):
+        return f"SurveyVars('{self._fp}') containing {len(self)} variables."
+
+    def __len__(self):
+        return len(self._survey_vars)
 
     def __getitem__(self, key: str) -> _SurveyVar:
         """[] indexer to get a survey variable by its key."""
