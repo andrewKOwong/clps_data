@@ -1,6 +1,6 @@
 from clps.survey_vars.utils import SurveyVars, load_keyed_survey_vars
 import yaml
-import clps.constants.survey_vars_keys as SVK
+import clps.survey_vars.json_keys as SVK
 from clps.constants.special_vars_names import VALID_SKIP, NOT_STATED
 import clps.constants.special_vars_names as N
 import pytest

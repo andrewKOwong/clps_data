@@ -4,7 +4,7 @@ import pathlib
 import pandas as pd
 from pandera import Column, DataFrameSchema, Check
 # from pandera.errors import SchemaErrors
-from clps.constants import survey_vars_keys as SVK
+from clps.survey_vars import json_keys as SVK
 
 # Command line argument keys
 INPUT_FP_KEY = "input_fp"
