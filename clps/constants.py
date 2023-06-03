@@ -17,6 +17,7 @@ EMPLOYED_KEY = 'MAP01'
 SERPROBP_KEY = 'SERPROBP'
 WEIGHT_KEY = 'WTPP'
 VERDATE_KEY = 'VERDATE'
+# Survey variables for grouping. Dict values are display names.
 GROUPBY_VARS = {
     NUMPPLHOUSE_KEY: 'Number of People in Household',
     NUMPPLHOUSE18_KEY: 'Number of People in Household 18+',
@@ -29,5 +30,6 @@ GROUPBY_VARS = {
     EDU_KEY: 'Highest Education',
     EMPLOYED_KEY: 'Worked at Job/Business in Last 12 Months'
 }
+# Special values
 VALID_SKIP = 'Valid skip'
 NOT_STATED = 'Not stated'
