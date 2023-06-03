@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Literal
 from clps.survey_vars import json_keys as SVK
-from clps.constants import special_vars_names as N
+import clps.constants as N
 from copy import deepcopy
 
 

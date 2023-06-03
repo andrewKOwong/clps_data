@@ -4,8 +4,8 @@ from textwrap import wrap
 import streamlit as st
 import altair as alt
 import yaml
-from clps.constants.special_vars_names import ID_KEY, WEIGHT_KEY
-from clps.constants.special_vars_names import GROUPBY_VARS
+from clps.constants import ID_KEY, WEIGHT_KEY
+from clps.constants import GROUPBY_VARS
 import clps.survey_vars.utils as svu
 import clps.transform as transform
 from clps.survey_vars.utils import SurveyVars

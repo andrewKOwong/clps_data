@@ -1,5 +1,5 @@
 import pandas as pd
-from clps.constants.special_vars_names import (
+from clps.constants import (
     REGION_KEY, VALID_SKIP, WEIGHT_KEY)
 from clps.survey_vars.utils import SurveyVars
 

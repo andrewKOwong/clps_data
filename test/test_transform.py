@@ -3,7 +3,7 @@ from typing import Literal
 from clps.transform import transform_data
 from clps.survey_vars.utils import SurveyVars
 import yaml
-from clps.constants.special_vars_names import (
+from clps.constants import (
     WEIGHT_KEY,
     REGION_KEY,
     NUMPPLHOUSE_KEY,
