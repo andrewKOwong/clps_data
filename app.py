@@ -1,4 +1,5 @@
 import pandas as pd
+from pandas.io.formats.style import Styler
 from pathlib import Path
 from textwrap import wrap
 import streamlit as st
@@ -150,7 +151,7 @@ def deploy_disable_interactivity_checkbox() -> bool:
 def style_datatable(
         df: pd.DataFrame,
         selected_var: str,
-        weighted: bool) -> pd.io.formats.style.Styler:
+        weighted: bool) -> Styler:
 
     # inject_datatable_header_style()
     # import numpy as np
