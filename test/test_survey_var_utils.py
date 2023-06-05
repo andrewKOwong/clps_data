@@ -137,7 +137,7 @@ def test_ASTP10G() -> None:
 
 def test_LGAP40P() -> None:
     sv = svs['LGAP40P']
-    assert sv.lookup_answer(7) == 'Don’t know'
+    assert sv.lookup_answer(7) == 'Don\'t know'
     assert sv.lookup_wt_freq(2) == 4_188_071
 
 

@@ -417,7 +417,7 @@
     "answer_categories": [
       "High school diploma or less",
       "Postsecondary certificate/diploma below bachelor level",
-      "Bachelor\u2019s degree or higher",
+      "Bachelor's degree or higher",
       "Not stated"
     ],
     "code": [
@@ -866,7 +866,7 @@
     "position": "30",
     "question_name": "",
     "concept": "Disputes or problems - Immigration to Canada",
-    "question_text": "Have you had any of the following types of disputes or problems in Canada since (month) 2018? - Immigration, refugee status or sponsoring a family member\u2019s application to immigrate to Canada",
+    "question_text": "Have you had any of the following types of disputes or problems in Canada since (month) 2018? - Immigration, refugee status or sponsoring a family member's application to immigrate to Canada",
     "universe": "All respondents",
     "note": "",
     "source": "",
@@ -1685,7 +1685,7 @@
     "position": "49",
     "question_name": "",
     "concept": "Serious problem - Immigration to Canada",
-    "question_text": "Were the following disputes or problems serious and not easy to fix? - Immigration, refugee status or sponsoring a family member\u2019s application to immigrate to Canada",
+    "question_text": "Were the following disputes or problems serious and not easy to fix? - Immigration, refugee status or sponsoring a family member's application to immigrate to Canada",
     "universe": "PRI_Q05I = 1",
     "note": "",
     "source": "",
@@ -3298,7 +3298,7 @@
       "Yes",
       "No",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -5879,7 +5879,7 @@
       "Yes",
       "No",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -5921,7 +5921,7 @@
     "length": "2.0",
     "position": "142",
     "question_name": "",
-    "concept": "Respondent\u2019s most serious problem",
+    "concept": "Respondent's most serious problem",
     "question_text": "",
     "universe": "At least one of PRI_Q10A to PRI_Q10S = 1",
     "note": "Based on PRI_Q10A-S and SER_Q10 Please refer to the survey questionnaire (question PRI_Q10) to see the full definition of each answer category.",
@@ -6523,7 +6523,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -6584,7 +6584,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -6645,7 +6645,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -6706,7 +6706,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -6767,7 +6767,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -6828,7 +6828,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -6889,7 +6889,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -6950,7 +6950,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -7011,7 +7011,7 @@
       "Somewhat helpful",
       "Very helpful",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -8176,7 +8176,7 @@
       "All of your problem",
       "Too early to say",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -8833,7 +8833,7 @@
       "Yes",
       "No",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -8886,7 +8886,7 @@
       "None of the time",
       "Not applicable/did not retain lawyer/paralegal/law student",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -8992,7 +8992,7 @@
       "Moderate impact",
       "Minor impact",
       "No impact",
-      "Don\u2019t know/Too soon to tell",
+      "Don't know/Too soon to tell",
       "Valid skip",
       "Not stated"
     ],
@@ -9054,7 +9054,7 @@
       "Very well",
       "Completely",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -9115,7 +9115,7 @@
       "Some",
       "A lot",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -9177,7 +9177,7 @@
       "Unresolved: dropped or gave up",
       "Unresolved: current not being dealt with, may be prob future",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -9241,7 +9241,7 @@
       "About the same",
       "Worse",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -9299,7 +9299,7 @@
       "Somewhat unfair",
       "Very unfair",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -9355,7 +9355,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem- More detailed and practical information",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - More detailed and practical information",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9401,7 +9401,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem-Someone to explain the information found",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - Someone to explain the information that you found",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9447,7 +9447,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem-Someone to help prepare documents",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - Someone who has the skills to help you understand or prepare forms, letters, or documents",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9493,7 +9493,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem - Someone to deal with the other party",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - Someone to deal with the other party, and argue on your behalf",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9539,7 +9539,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem-Lawyer to deal with problem using courts",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - A lawyer to deal with the problem using the legal system or courts",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9585,7 +9585,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem-Greater access to legal advice/represent",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - Greater access to affordable legal advice or representation to help you",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9631,7 +9631,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem- Services that respond better to needs",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - Services that respond better to your needs",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9677,7 +9677,7 @@
     "question_name": "",
     "concept": "Wish you had to solve problem - Other",
     "question_text": "Which of the following do you wish you had to help solve your problem? Would you say: - Other",
-    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don\u2019t know) or Non response))",
+    "universe": "SERPROB in (1 to 19) and ((STA_Q30 in (3,4,5)) or (STA_Q10 = 9 (Don't know) or Non response))",
     "note": "",
     "source": "",
     "answer_categories": [
@@ -9732,7 +9732,7 @@
       "Somewhat important",
       "Not important",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -11217,7 +11217,7 @@
       "Yes",
       "No",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -11268,7 +11268,7 @@
       "Yes",
       "No",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -11319,7 +11319,7 @@
       "Yes",
       "No",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -11370,7 +11370,7 @@
       "Yes",
       "No",
       "Valid skip",
-      "Don\u2019t know",
+      "Don't know",
       "Not stated"
     ],
     "code": [
@@ -12194,8 +12194,8 @@
     "length": "1.0",
     "position": "271",
     "question_name": "",
-    "concept": "Problems experienced because of serious prob. - Child\u2019s behaviour",
-    "question_text": "What social, family, or personal problems have you experienced as a result of your most serious problem? Would you say: - Problems with your child\u2019s behaviour",
+    "concept": "Problems experienced because of serious prob. - Child's behaviour",
+    "question_text": "What social, family, or personal problems have you experienced as a result of your most serious problem? Would you say: - Problems with your child's behaviour",
     "universe": "SERPROB in (1 to 19) and HLT_Q10_04 = 4",
     "note": "",
     "source": "",
@@ -12729,7 +12729,7 @@
     "concept": "Self-reported disability",
     "question_text": "Do you identify as a person with a disability?",
     "universe": "All respondents",
-    "note": "This question allowed for respondents to self-identify as having a disability. Their response cannot be compared to the disability status derived from the standardized set of 41 Disability Screening Questions (DSQ). The DSQ module is based on the social model of disability which focuses on social participation and one\u2019s environment rather than simply the health or medical condition itself.",
+    "note": "This question allowed for respondents to self-identify as having a disability. Their response cannot be compared to the disability status derived from the standardized set of 41 Disability Screening Questions (DSQ). The DSQ module is based on the social model of disability which focuses on social participation and one's environment rather than simply the health or medical condition itself.",
     "source": "",
     "answer_categories": [
       "Yes",

@@ -395,7 +395,7 @@ def test_var_subgroups_HLTFLP() -> None:
         region='Québec',
         groupby_var=EDU_KEY,
         # Note, currently the apostrophe is actually a right quotation mark
-        subgroup_name="Bachelor’s degree or higher",
+        subgroup_name="Bachelor\'s degree or higher",
         subgroup_code=3,
         is_valid_skip=False
     )
