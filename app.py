@@ -20,6 +20,9 @@ from importlib import reload
 reload(svu)
 reload(transform)
 
+# App Title
+st.set_page_config(page_title="CLPS Data Dashboard")
+
 
 CONFIG_FP = Path('config.yaml')
 
