@@ -1,7 +1,8 @@
 # clps WORK-IN-PROGRESS
 
 ## Project Summary
-Test Project Summary Blurb for pastelet display.
+This project is a dashboard app for
+the Canadian Legal Problems Survey.
 
 ## Instructions
 ### Description of Files
