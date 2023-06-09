@@ -8,11 +8,10 @@
     Community Cloud.
 - `clps/` contains the main libraries.
 - `clps_docs` contains the original CLPS documentation as provided by StatsCan.
-- `data/` contains the data files.
-    - TODO describe data files. GIT LFS?
+- `data/` contains the compressed CLPS data, and the extracted survey variable
+metadata from the codebook.
 - `tests/` contains `pytest` tests.
 - `text/` contains text/markdown files used in the app.
-- TODO `.gitattributes` git LFS?
 - `.gitignore` is used to ignore files from git.
 - `app.py` is the main app file.
 - `config.yaml` is provides configuration info for the app. It is used to hold
