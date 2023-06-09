@@ -33,7 +33,7 @@ def get_args() -> dict:
     parser.add_argument(
         "-i", "--input_fp",
         help="Path to the input data CSV file. Defaults to `data/clps.csv`.",
-        default="data/clps.csv",
+        default="data/clps.zip",
         dest=INPUT_FP_KEY
     )
     parser.add_argument(
