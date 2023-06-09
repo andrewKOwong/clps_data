@@ -1,6 +1,7 @@
 # clps WORK-IN-PROGRESS
 
 ## Project Summary
+Test Project Summary Blurb for pastelet display.
 
 ## Instructions
 ### Description of Files
