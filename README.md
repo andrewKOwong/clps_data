@@ -1,8 +1,31 @@
-# clps WORK-IN-PROGRESS
+# Canadian Legal Problems Survey: Data Dashboard
 
 ## Project Summary
-This project is a dashboard app for
-the Canadian Legal Problems Survey.
+The [Canadian Legal Problems
+Survey](https://www.justice.gc.ca/eng/rp-pr/jr/survey-enquete.html) (CLPS) is a national survey of Canadians' experiences with the justice system, most recently conducted by Statisics Canada in 2021.
+Data from the survey is provided by Statistics Canada via a [Public Use Microdata
+File](https://www150.statcan.gc.ca/n1/pub/35-25-0002/352500022022001-eng.htm) (PUMF).
+
+This project contains code for a dashboard app
+for exploring data from the main CLPS dataset.
+
+### Links
+- [Dashboard](
+  https://clps-data.streamlit.app/
+) on Streamlit Community Cloud.
+- [Code repo](https://github.com/andrewKOwong/clps_data) (i.e. this repo)
+- [Blogpost](
+  http://mixedconclusions.com/blog/clps/
+) describing this project.
+- See [here](
+  https://github.com/andrewKOwong/clps_survey_vars
+)
+for a related project
+where I extract data from the CLPS codebook PDF.
+- To learn more about this dataset and how it can benefit your organization,
+please contact [Parallax Information Consulting](
+  https://parallaxinformation.com/
+).
 
 ## Instructions
 ### Description of Files
@@ -28,14 +51,16 @@ metadata from the codebook.
 
 
 
-### Libraries Required TODO
+### Libraries Required
 This is a list of libraries required to run the dashboard app. It is not
 rigourously tested for backwards-compatibility, and the app likely works with
 older versions of these libraries.
-- requirements.txt
-- python >= 3.10.4
-- pandas?
-- pytest
+- `python >= 3.10.4`
+- `pandas`
+- `pytest`
+- `streamlit`
+- `altair`
+- `yaml`
 
 
 A `requirements.txt` file is provided, but it is for installing app
