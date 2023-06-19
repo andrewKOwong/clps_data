@@ -16,7 +16,24 @@ is a national survey of Canadians' experiences with the justice
 system, most recently conducted by Statisics Canada in 2021.
 
 The original data is provided by StatsCan via a
-[Public Use Microdata File](https://www150.statcan.gc.ca/n1/pub/35-25-0002/352500022022001-eng.htm).
+[Public Use Microdata
+File](https://www150.statcan.gc.ca/n1/pub/35-25-0002/352500022022001-eng.htm).
+
+
+<div class="list-block">
+See also:
+
+- A <a href="https://mixedconclusions.com/blog/clps/">technical blogpost</a>
+about this app's development
+- <a href="https://github.com/andrewKOwong/clps_data">Github code repo</a>
+</div>
+
+For more information about this data and how it can help your organization,
+please contact [Parallax Information Consulting](
+    https://parallaxinformation.com/
+).
+
+---
 
 <div class="list-block">
 This app displays plots for each survey variable of the data:
@@ -26,7 +43,6 @@ This app displays plots for each survey variable of the data:
     - Filter by **region**.
     - Group by a **demographic variable**.
 </div>
-
 
 
 Counts are **weighted** to represent the entire
