@@ -142,6 +142,38 @@ def deploy_valid_skips_checkbox(
     return remove_valid_skips
 
 
+def deploy_valid_skips_selectbox(
+        survey_vars: SurveyVars,
+        selected_var: str) -> str | None:
+    """Deploy a selectbox to choose valid skip handling.
+
+    Checks SurveyVars object to see if the answer categories has a valid skip
+    category. I.e. does not directly interrogate the main data.
+
+    Recoding changes the valid skip category to 'No', removing removes the
+    valid skip category from the data, and leaving does nothing.
+
+    Args:
+        survey_vars: SurveyVars object, containing variable metadata.
+        selected_var: The variable selected for display.
+
+    Returns:
+        str code, one of 'recode', 'remove', or 'leave',
+        other wise None if the selected survey var has no valid skips.
+    """
+    if survey_vars[selected_var].has_valid_skips():
+        # Deploy the selectbox
+        return st.selectbox(
+            label='Valid skip handling:',
+            options=['recode', 'remove', 'leave'],
+            format_func=lambda k:
+                {'recode': "Recode to 'No'",
+                 'remove': "Remove valid skips",
+                 'leave': "Leave as is"})
+    else:
+        return None
+
+
 def deploy_disable_interactivity_checkbox() -> bool:
     """Deploy a checkbox to disable interactive chart (pan/zoom).
 
