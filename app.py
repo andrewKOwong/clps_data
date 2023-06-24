@@ -142,7 +142,7 @@ def deploy_valid_skips_checkbox(
     return remove_valid_skips
 
 
-def deploy_valid_skips_selectbox(
+def deploy_valid_skip_selectbox(
         survey_vars: SurveyVars,
         selected_var: str) -> str | None:
     """Deploy a selectbox to choose valid skip handling.
@@ -169,7 +169,7 @@ def deploy_valid_skips_selectbox(
             format_func=lambda k:
                 {'recode': "Recode to 'No'",
                  'remove': "Remove valid skips",
-                 'leave': "Leave as is"})
+                 'leave': "Leave as is"}[k])
     else:
         return None
 
@@ -365,6 +365,10 @@ def main(debug=False, log_file_path: str | None = None):
     region = deploy_region_selectbox(svs)
     # Choose variable for bar chart groupings
     groupby_var = deploy_groupby_var_selectbox(selected_var)
+    # Selector for valid skip handling
+    valid_skip_handling = deploy_valid_skip_selectbox(
+        svs, selected_var
+    )
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
     remove_valid_skips = deploy_valid_skips_checkbox(svs, selected_var)
