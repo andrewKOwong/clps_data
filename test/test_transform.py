@@ -624,23 +624,14 @@ def var_subgroup_recode_tester(
 
     def calculate_freq_helper(result) -> int:
         """Impure helper for getting [weighted] frequency from results."""
-        def shim(df):
-            print(df)
-            return df
         # Selected var, etc., reaches into outer scope
         return (
             result
             .loc[lambda df_: df_[selected_var] == selected_var_category, :]
-            .pipe(shim)
             .loc[lambda df_: df_[groupby_var] == subgroup_name, :]
-            .pipe(shim)
             [WEIGHT_KEY]
-            .pipe(shim)
             .iloc[0]
         )
-
-    print(correct_freq)
-    print(correct_wt_freq)
 
     result = transform_data(
         **var_kwargs,
