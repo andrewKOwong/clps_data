@@ -3,6 +3,7 @@ from typing import Literal
 from clps.transform import transform_data
 from clps.survey_vars.utils import SurveyVars
 import yaml
+from copy import deepcopy
 from clps.constants import (
     WEIGHT_KEY,
     REGION_KEY,
@@ -18,6 +19,7 @@ from clps.constants import (
     EMPLOYED_KEY,
     VALID_SKIP,
     NOT_STATED)
+from clps.constants import VALID_SKIP_CODES
 
 
 CONFIG_FP = 'config.yaml'
@@ -48,7 +50,8 @@ def raw_var_tester(
         selected_var: str,
         freqs: list[int],
         wt_freqs: list[int],
-        valid_skip_number: int | None = None) -> None:
+        valid_skip_number: int | None = None,
+        no_number: int | None = None) -> None:
     """Template tester function for a single raw variable.
 
     Survey variable of interest is tested weighted/unweighted, and with/without
@@ -66,10 +69,12 @@ def raw_var_tester(
             index of the valid skip in the codebook + 1. E.g. if valid skip
             is the third line item, then valid_skip_number = 3.
             If the variables has no valid skips, pass None.
+        no_number: same as valid_skip_number, but for the "No" code.
     """
-    # Convert valid skip number to index
+    # Convert valid skip/no number to index
     valid_skip_index = (valid_skip_number - 1
                         if valid_skip_number is not None else None)
+    no_index = (no_number - 1 if no_number is not None else None)
     # Generic kwargs for transform_data()
     var_kwargs = {
         'df': df,
@@ -78,40 +83,77 @@ def raw_var_tester(
         'region': None,
         'groupby_var': None}
 
+    def test_helper(
+            valid_skip_handling: str, weighted: bool, **kwargs
+            ) -> list:
+        """Helper function to test transform_data()."""
+        result = transform_data(
+            **kwargs,
+            valid_skip_handling=valid_skip_handling,
+            weighted=weighted)
+        return list(result[WEIGHT_KEY])
+
     # Test freqs/weighted freqs, while keeping valid skips (if present)
-    result = transform_data(
+    assert test_helper(
         **var_kwargs,
-        remove_valid_skips=False,
-        weighted=False
-    )
-    assert list(result[WEIGHT_KEY]) == freqs
+        valid_skip_handling=None,
+        weighted=False) == freqs
 
-    result = transform_data(
+    assert test_helper(
         **var_kwargs,
-        remove_valid_skips=False,
-        weighted=True
-    )
-    assert list(result[WEIGHT_KEY]) == wt_freqs
+        valid_skip_handling=None,
+        weighted=True) == wt_freqs
 
-    # Test while removing valid skips.
+    # Test while leaving valid_skips, removing valid skips, or recoding to No.
     # This code will not be run if there is no valid skip (i.e.
     # valid_skip_index is not provided).
     if valid_skip_index is not None:
-        freqs.pop(valid_skip_index)
-        wt_freqs.pop(valid_skip_index)
-        result = transform_data(
-            **var_kwargs,
-            remove_valid_skips=True,
-            weighted=False
-        )
-        assert list(result[WEIGHT_KEY]) == freqs
+        # Leaving valid skips
+        freqs_copy = deepcopy(freqs)
+        wt_freqs_copy = deepcopy(wt_freqs)
 
-        result = transform_data(
+        assert test_helper(
             **var_kwargs,
-            remove_valid_skips=True,
-            weighted=True
-        )
-        assert list(result[WEIGHT_KEY]) == wt_freqs
+            valid_skip_handling=VALID_SKIP_CODES.LEAVE,
+            weighted=False) == freqs_copy
+
+        assert test_helper(
+            **var_kwargs,
+            valid_skip_handling=VALID_SKIP_CODES.LEAVE,
+            weighted=True) == wt_freqs_copy
+
+        # Leaving valid skips
+        # Removing valid skips
+        freqs_copy = deepcopy(freqs)
+        wt_freqs_copy = deepcopy(wt_freqs)
+        freqs_copy.pop(valid_skip_index)
+        wt_freqs_copy.pop(valid_skip_index)
+
+        assert test_helper(
+            **var_kwargs,
+            valid_skip_handling=VALID_SKIP_CODES.REMOVE,
+            weighted=False) == freqs_copy
+
+        assert test_helper(
+            **var_kwargs,
+            valid_skip_handling=VALID_SKIP_CODES.REMOVE,
+            weighted=True) == wt_freqs_copy
+
+        # Recoding valid skips to No.
+        freqs_copy = deepcopy(freqs)
+        wt_freqs_copy = deepcopy(wt_freqs)
+        freqs_copy[no_index] += freqs_copy.pop(valid_skip_index)
+        wt_freqs_copy[no_index] += wt_freqs_copy.pop(valid_skip_index)
+
+        assert test_helper(
+            **var_kwargs,
+            valid_skip_handling=VALID_SKIP_CODES.RECODE,
+            weighted=False) == freqs_copy
+
+        assert test_helper(
+            **var_kwargs,
+            valid_skip_handling=VALID_SKIP_CODES.RECODE,
+            weighted=True) == wt_freqs_copy
 
 
 def test_raw_var_DSHP20E() -> None:
@@ -121,7 +163,9 @@ def test_raw_var_DSHP20E() -> None:
         selected_var='DSHP20E',
         freqs=[108, 416, 20018, 628],
         wt_freqs=[182_456, 589_265, 28_473_965, 846_299],
-        valid_skip_number=3)
+        valid_skip_number=3,
+        no_number=2
+        )
 
 
 def test_raw_var_CSTP10EP() -> None:
@@ -131,7 +175,8 @@ def test_raw_var_CSTP10EP() -> None:
         selected_var='CSTP10EP',
         freqs=[505, 3296, 15_484, 1885],
         wt_freqs=[663_571, 4_645_598, 22_204_983, 2_577_833],
-        valid_skip_number=3)
+        valid_skip_number=3,
+        no_number=2)
 
 
 def test_raw_var_AGEGRP() -> None:
