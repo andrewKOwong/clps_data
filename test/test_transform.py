@@ -289,7 +289,7 @@ def var_subgroup_tester(
         [WEIGHT_KEY]
         .iloc[0]
     )
-    correct_wt_freq = (
+    correct_wt_freq = int(
         correct
         .groupby([selected_var, groupby_var])[WEIGHT_KEY]
         .sum()
