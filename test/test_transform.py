@@ -323,20 +323,29 @@ def var_subgroup_tester(
 
     # Test: no valid skip removal, frequency
     result = transform_data(
-        **var_kwargs, remove_valid_skips=False, weighted=False)
+        **var_kwargs,
+        valid_skip_handling=VALID_SKIP_CODES.LEAVE,
+        weighted=False)
     assert calculate_freq_helper(result) == correct_freq
     # Test: No valid skip removal, weighted frequency
     result = transform_data(
-        **var_kwargs, remove_valid_skips=False, weighted=True)
+        **var_kwargs,
+        valid_skip_handling=VALID_SKIP_CODES.LEAVE,
+        weighted=True)
     assert calculate_freq_helper(result) == correct_wt_freq
 
     # Test: as above, but with valid skip removal
     if not is_valid_skip:
         result = transform_data(
-            **var_kwargs, remove_valid_skips=True, weighted=False)
+            **var_kwargs,
+            valid_skip_handling=VALID_SKIP_CODES.REMOVE,
+            weighted=False)
         assert calculate_freq_helper(result) == correct_freq
+
         result = transform_data(
-            **var_kwargs, remove_valid_skips=True, weighted=True)
+            **var_kwargs,
+            valid_skip_handling=VALID_SKIP_CODES.REMOVE,
+            weighted=True)
         assert calculate_freq_helper(result) == correct_wt_freq
 
 
