@@ -647,7 +647,7 @@ def var_subgroup_recode_tester(
     assert calculate_freq_helper(result) == correct_wt_freq
 
 
-def test_var_subgroups_recode_PRIP10A() -> None:
+def test_var_subgroups_recode_PRIP10A_YES() -> None:
     var_subgroup_recode_tester(
         df=df,
         survey_vars=svs,
@@ -658,4 +658,32 @@ def test_var_subgroups_recode_PRIP10A() -> None:
         groupby_var=AGE_KEY,
         subgroup_name='35 to 44 years old',
         subgroup_code=3
+    )
+
+
+def test_var_subgroups_recode_ASTP10C_NOT_STATED() -> None:
+    var_subgroup_recode_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='ASTP10C',
+        selected_var_category=NOT_STATED,
+        selected_var_code=9,
+        region='Atlantic',
+        groupby_var=GENDER_KEY,
+        subgroup_name='Female gender',
+        subgroup_code=2
+    )
+
+
+def test_var_subgroups_recode_ASTP10C_NO() -> None:
+    var_subgroup_recode_tester(
+        df=df,
+        survey_vars=svs,
+        selected_var='ASTP10C',
+        selected_var_category=NO,
+        selected_var_code=2,
+        region='Ontario',
+        groupby_var=GENDER_KEY,
+        subgroup_name='Male gender',
+        subgroup_code=1
     )
