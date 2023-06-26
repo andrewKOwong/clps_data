@@ -51,8 +51,8 @@ population of Canada. Uncheck the box for actual survey respondent counts.
 Some survey questions are not presented to respondents
 based on their answers to previous questions.
 These are called **"Valid skips"**.
-Choose either to recode these as response as 'No',
-remove them from the plot, or leave them as-is.
+Choose whether to recode these as a 'No' response,
+remove them from the plot, or leave them as a separate category.
 
 
 <div class="list-block">
