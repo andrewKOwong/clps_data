@@ -82,7 +82,7 @@ def deploy_survey_var_selectbox(
     selectable = [x for x in selectable if x not in exclude]
 
     return st.selectbox(
-        label='Variable',
+        label='Variable (type to search)',
         options=selectable,
         format_func=lambda k: f"{k} - {survey_vars[k].concept}"
     )
