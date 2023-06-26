@@ -2,6 +2,7 @@ import pandas as pd
 from clps.constants import (
     REGION_KEY, VALID_SKIP, WEIGHT_KEY)
 from clps.survey_vars.utils import SurveyVars
+from typing import Literal
 
 
 def _filter_by_region(df: pd.DataFrame, region: int | None) -> pd.DataFrame:
@@ -110,11 +111,17 @@ def _convert_to_categorical(
     return df
 
 
-def _filter_valid_skips(
+def _handle_valid_skips(
         df: pd.DataFrame,
         selected_var: str,
-        remove_valid_skips: bool) -> pd.DataFrame:
-    """Filter out valid skips from the data.
+        valid_skip_handling: Literal['recode', 'remove', 'leave'] | None
+        ) -> pd.DataFrame:
+    """Handle valid skips in the data.
+
+    Either recode valid skips to "No", remove them from the data, or leave them
+    as is. If `None` for `valid_skip_handling`, indicates that no valid skips
+    are in the data, and no filtering is attempted (essentially the same as
+    'leave').
 
     If remove_valid_skips is `False` or `None`, this filter does nothing.
 
@@ -122,17 +129,29 @@ def _filter_valid_skips(
         df: Dataframe with survey variable columns, converted to str ordered
         categorical dtype.
         selected_var: Name of the survey variable column of interest.
-        remove_valid_skips: Whether to remove valid skips from the data.
+        valid_skip_handling: Str code indicating valid skip handling behaviour.
 
     Returns:
-        Dataframe with valid skips removed from the selected variable column.
+        Dataframe with valid skips recoded or removed from the selected
+        variable column.
     """
-    if remove_valid_skips:
+    if (valid_skip_handling is None) or (valid_skip_handling == 'leave'):
+        pass
+    elif valid_skip_handling == 'remove':
         df = df.query(f"{selected_var} != '{VALID_SKIP}'")
         df = df.assign(**{
             selected_var:
                 lambda d: d[selected_var].cat.remove_unused_categories()
         })
+    elif valid_skip_handling == 'recode':
+        df = df.assign(**{
+            selected_var:
+                lambda d: d[selected_var].replace({VALID_SKIP: 'No'})
+        })
+    else:
+        raise ValueError(
+            f"valid_skip_handling of {valid_skip_handling} not recognized."
+        )
     return df
 
 
@@ -182,7 +201,7 @@ def transform_data(
         region: int,
         selected_var: str,
         groupby_var: str | None,
-        remove_valid_skips: bool | None,
+        valid_skip_handling: str | None,
         weighted: bool) -> pd.DataFrame:
     """Transform CLPS data into a format suitable for plotting.
 
@@ -195,7 +214,8 @@ def transform_data(
         region: Region code to filter the data by.
         selected_var: Name of the survey variable column of interest.
         groupby_var: Name of the groupby column, if any.
-        remove_valid_skips: Whether to remove valid skips from the data.
+        valid_skip_handling: Recode valid skips to "No", remove, or leave
+            as is.
         weighted: Calculate the weight sums. Otherwise, counts the rows,
             representing the number of respondents directly.
     """
@@ -206,7 +226,7 @@ def transform_data(
     # Replace integer codes with text labels, as ordered categorical dtype.
     df = _convert_to_categorical(df, survey_vars, selected_var, groupby_var)
     # Filter out valid skips
-    df = _filter_valid_skips(df, selected_var, remove_valid_skips)
+    df = _handle_valid_skips(df, selected_var, valid_skip_handling)
     # Groupby and aggregate
     df = _groupby_and_aggregate(df, selected_var, groupby_var, weighted)
     return df

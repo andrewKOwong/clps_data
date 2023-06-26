@@ -32,4 +32,6 @@ GROUPBY_VARS = {
 }
 # Special values
 VALID_SKIP = 'Valid skip'
+YES = 'Yes'
+NO = 'No'
 NOT_STATED = 'Not stated'

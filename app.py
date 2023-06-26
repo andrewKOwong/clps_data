@@ -371,7 +371,6 @@ def main(debug=False, log_file_path: str | None = None):
     )
     # Selector for weighted/unweighted frequency
     plot_weighted = st.checkbox('Plot weighted frequency', value=True)
-    remove_valid_skips = deploy_valid_skips_checkbox(svs, selected_var)
     disable_interactive = deploy_disable_interactivity_checkbox()
     # Spacing
     st.divider()
@@ -385,7 +384,7 @@ def main(debug=False, log_file_path: str | None = None):
         region=region,
         selected_var=selected_var,
         groupby_var=groupby_var,
-        remove_valid_skips=remove_valid_skips,
+        valid_skip_handling=valid_skip_handling,
         weighted=plot_weighted)
 
     # Prepare Altair chart
