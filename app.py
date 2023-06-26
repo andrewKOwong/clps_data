@@ -7,6 +7,7 @@ import altair as alt
 import yaml
 from clps.constants import ID_KEY, WEIGHT_KEY
 from clps.constants import GROUPBY_VARS
+from clps.constants import VALID_SKIP_CODES
 import clps.survey_vars.utils as svu
 import clps.transform as transform
 from clps.survey_vars.utils import SurveyVars
@@ -165,11 +166,16 @@ def deploy_valid_skip_selectbox(
         # Deploy the selectbox
         return st.selectbox(
             label='Valid skip handling:',
-            options=['recode', 'remove', 'leave'],
+            options=[VALID_SKIP_CODES.RECODE,
+                     VALID_SKIP_CODES.REMOVE,
+                     VALID_SKIP_CODES.LEAVE
+                     ],
             format_func=lambda k:
-                {'recode': "Recode to 'No'",
-                 'remove': "Remove valid skips",
-                 'leave': "Leave as is"}[k])
+                {VALID_SKIP_CODES.RECODE: "Recode to 'No'",
+                 VALID_SKIP_CODES.REMOVE: "Remove valid skips",
+                 VALID_SKIP_CODES.LEAVE: "Leave as is"}
+                [k]
+            )
     else:
         return None
 

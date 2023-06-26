@@ -1,3 +1,4 @@
+from collections import namedtuple
 # Var names that are often specifically called
 # because they are special cases of some sort.
 PROBCNTP_KEY = 'PROBCNTP'
@@ -35,3 +36,6 @@ VALID_SKIP = 'Valid skip'
 YES = 'Yes'
 NO = 'No'
 NOT_STATED = 'Not stated'
+# Valid skip handling codes
+_ValidSkipCodes = namedtuple('ValidSkipCodes', ['RECODE', 'REMOVE', 'LEAVE'])
+VALID_SKIP_CODES = _ValidSkipCodes('recode', 'remove', 'leave')
