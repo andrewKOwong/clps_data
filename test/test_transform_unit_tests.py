@@ -9,6 +9,7 @@ SELECTED_VAR = 'selected_var'
 GROUPBY_VAR = 'groupby_var'
 WEIGHT = 'weight'
 
+
 @pytest.fixture
 def _handle_valid_skips_sample_data() -> pd.DataFrame:
     data = {
