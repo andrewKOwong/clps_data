@@ -173,7 +173,7 @@ def deploy_valid_skip_selectbox(
             format_func=lambda k:
                 {VALID_SKIP_CODES.RECODE: "Recode to 'No'",
                  VALID_SKIP_CODES.REMOVE: "Remove valid skips",
-                 VALID_SKIP_CODES.LEAVE: "Leave as is"}
+                 VALID_SKIP_CODES.LEAVE: "Leave as original data"}
                 [k]
             )
     else:

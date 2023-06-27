@@ -52,7 +52,8 @@ Some survey questions are not presented to respondents
 based on their answers to previous questions.
 These are called **"Valid skips"**.
 Choose whether to recode these as a 'No' response,
-remove them from the plot, or leave them as a separate category.
+remove them from the plot, or leave them as in the original data
+(i.e. a separate category).
 
 
 <div class="list-block">
