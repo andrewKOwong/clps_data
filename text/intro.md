@@ -18,6 +18,8 @@ system, most recently conducted by Statisics Canada in 2021.
 The original data is provided by StatsCan via a
 [Public Use Microdata
 File](https://www150.statcan.gc.ca/n1/pub/35-25-0002/352500022022001-eng.htm).
+Information about definitions and methodology
+can be found in the materials included with the microdata download.
 
 
 <div class="list-block">
@@ -26,6 +28,7 @@ See also:
 - A <a href="https://mixedconclusions.com/blog/clps/">technical blogpost</a>
 about this app's development
 - <a href="https://github.com/andrewKOwong/clps_data">Github code repo</a>
+- <a href="https://clps-survey-variables.streamlit.app/">Auxiliary app for browsing the CLPS codebook</a>
 </div>
 
 For more information about this data and how it can help your organization,
